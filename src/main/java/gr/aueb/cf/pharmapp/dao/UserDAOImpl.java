@@ -124,10 +124,7 @@ public class UserDAOImpl implements IUserDAO{
     public User getById(Long id) throws UserDAOException{
         EntityManager em = emf.createEntityManager();
         try{
-            return em.createQuery("SELECT u FROM User u WHERE u.id = " +
-                            ":id", User.class)
-                    .setParameter("id", id)
-                    .getSingleResult();
+            return em.find(User.class,id);
         } catch (Exception e){
             throw new UserDAOException("Error in finding user by id" + e.getMessage());
         } finally {

@@ -37,6 +37,12 @@ public class Pharmacy {
     public Pharmacy() {
     }
 
+    public Pharmacy(String name){
+        this();
+        this.name = name;
+        this.createdAt = LocalDateTime.now();
+    }
+
     public Pharmacy(Long id, String name, LocalDateTime createdAt, User user,
                     Set<TradeRecord> recordsGiver, Set<TradeRecord> recordsReceiver, Set<TradeRecord> recordsRecorder) {
         this.id = id;
@@ -142,7 +148,7 @@ public class Pharmacy {
     public void addRecordRecorder(TradeRecord tradeRecord){
         if (recordsRecorder == null) recordsRecorder = new HashSet<>();
         recordsRecorder.add(tradeRecord);
-        tradeRecord.setGiver(this);
+            tradeRecord.setRecorder(this);
     }
 
     public void removeRecordRecorder(TradeRecord tradeRecord){

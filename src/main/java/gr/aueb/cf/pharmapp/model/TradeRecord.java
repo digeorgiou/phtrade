@@ -33,6 +33,7 @@ public class TradeRecord {
     @JoinColumn(name = "recorder_id")
     private Pharmacy recorder;
 
+    @Column(name = "transaction_date")
     private LocalDateTime transactionDate;
 
     public TradeRecord() {

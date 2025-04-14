@@ -3,6 +3,7 @@ package gr.aueb.cf.pharmapp.dao;
 import gr.aueb.cf.pharmapp.exceptions.TradeRecordDAOException;
 import gr.aueb.cf.pharmapp.model.TradeRecord;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ITradeRecordDAO {
@@ -13,11 +14,13 @@ public interface ITradeRecordDAO {
     public void delete(Long id) throws TradeRecordDAOException;
     public TradeRecord getById(Long id) throws TradeRecordDAOException;
     public List<TradeRecord> getAll() throws TradeRecordDAOException;
-    public List<TradeRecord> getByPharmacy(Long pharmacyId) throws TradeRecordDAOException;
-    public List<TradeRecord> getBetweenPharmacies(Long pharmacy1Id,
-                                                  Long pharmacy2Id) throws TradeRecordDAOException;
-    public Double calculateBalance(Long pharmacy1Id, Long pharmacy2Id) throws TradeRecordDAOException;
-    public List<TradeRecord> getRecentTrades(Long pharmacyId, int days) throws TradeRecordDAOException;
+    public List<TradeRecord> findTradesBetweenPharmacies(Long pharmacy1Id, Long pharmacy2Id,
+                                                         LocalDateTime startDate,
+                                                         LocalDateTime endDate)
+            throws TradeRecordDAOException;
+
+    public List<TradeRecord> getRecentTrades(Long pharmacyId, int days)
+            throws TradeRecordDAOException;
 
 
 
