@@ -6,6 +6,9 @@ import gr.aueb.cf.pharmapp.model.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 import java.util.List;
 
@@ -20,8 +23,9 @@ public class PharmacyDAOImpl implements  IPharmacyDAO{
     @Override
     public Pharmacy save(Pharmacy pharmacy) throws PharmacyDAOException {
         EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
+        EntityTransaction tx = null;
         try {
+            tx = em.getTransaction();
             tx.begin();
             em.persist(pharmacy);
             tx.commit();
@@ -41,9 +45,9 @@ public class PharmacyDAOImpl implements  IPharmacyDAO{
     @Override
     public Pharmacy update(Pharmacy pharmacy) throws PharmacyDAOException {
         EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
-
+        EntityTransaction tx = null;
         try {
+            tx = em.getTransaction();
             tx.begin();
             Pharmacy merged = em.merge(pharmacy);
             tx.commit();
@@ -64,9 +68,9 @@ public class PharmacyDAOImpl implements  IPharmacyDAO{
     public void delete(Long id) throws PharmacyDAOException {
 
         EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
-
-        try{
+        EntityTransaction tx = null;
+        try {
+            tx = em.getTransaction();
             tx.begin();
             Pharmacy pharmacy = em.find(Pharmacy.class, id);
             if(pharmacy != null){
@@ -102,8 +106,22 @@ public class PharmacyDAOImpl implements  IPharmacyDAO{
     public List<Pharmacy> getAll() throws PharmacyDAOException {
         EntityManager em = emf.createEntityManager();
         try{
-            return em.createQuery("Select p FROM Pharmacy p", Pharmacy.class).getResultList();
-        } finally {
+
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Pharmacy> query = cb.createQuery(Pharmacy.class);
+            Root<Pharmacy> pharmacy = query.from(Pharmacy.class);
+
+            query.select(pharmacy);
+
+            List<Pharmacy> pharmacies = em.createQuery(query).getResultList();
+
+
+
+            return pharmacies;
+
+        }catch (Exception e) {
+            throw new PharmacyDAOException("Error retrieving all pharmacies: " + e.getMessage());
+        }finally {
             if (em != null && em.isOpen()) {
                 em.close();
             }
@@ -114,27 +132,52 @@ public class PharmacyDAOImpl implements  IPharmacyDAO{
     public List<Pharmacy> getByName(String name) throws PharmacyDAOException {
         EntityManager em = emf.createEntityManager();
         try{
-            return em.createQuery(
-                    "SELECT p FROM Pharmacy p WHERE p.name LIKE :name",
-                    Pharmacy.class).setParameter("name", "%" + name + "%").getResultList();
-            }finally {
-                if (em != null && em.isOpen()) {
-                    em.close();
-                }
+
+                CriteriaBuilder cb = em.getCriteriaBuilder();
+                CriteriaQuery<Pharmacy> query = cb.createQuery(Pharmacy.class);
+                Root<Pharmacy> pharmacy = query.from(Pharmacy.class);
+
+                query.select(pharmacy)
+                        .where(cb.like(pharmacy.get("name"),"%" + name + "%"));
+
+                List<Pharmacy> pharmacies = em.createQuery(query).getResultList();
+
+
+                return pharmacies;
+
+
+            }catch (Exception e) {
+
+            throw new PharmacyDAOException("Error retrieving pharmacy by " +
+                    "name: " + e.getMessage());
+        }finally {
+            if (em != null && em.isOpen()) {
+                em.close();
             }
+        }
     }
 
     @Override
     public Pharmacy findByUser(User user) throws PharmacyDAOException {
         EntityManager em = emf.createEntityManager();
-        try {
-            return em.createQuery(
-                            "SELECT p FROM Pharmacy p WHERE p.user = :user", Pharmacy.class)
-                    .setParameter("user", user)
-                    .getSingleResult();
-        } catch (Exception e) {
-            throw new PharmacyDAOException("Error finding pharmacy by user " + e.getMessage());
-        } finally {
+        try{
+
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Pharmacy> query = cb.createQuery(Pharmacy.class);
+            Root<Pharmacy> pharmacy = query.from(Pharmacy.class);
+
+            query.select(pharmacy)
+                    .where(cb.equal(pharmacy.get("user"),user));
+
+            Pharmacy result = em.createQuery(query).getSingleResult();
+
+            return result;
+
+        }catch (Exception e) {
+
+            throw new PharmacyDAOException("Error retrieving pharmacy by " +
+                    "user: " + e.getMessage());
+        }finally {
             if (em != null && em.isOpen()) {
                 em.close();
             }
@@ -183,15 +226,28 @@ public class PharmacyDAOImpl implements  IPharmacyDAO{
 
     @Override
     public boolean existsByName(String name) throws PharmacyDAOException {
-        try (EntityManager em = emf.createEntityManager()) {
-            Long count = em.createQuery(
-                            "SELECT COUNT(p) FROM Pharmacy p WHERE p.name = :name", Long.class)
-                    .setParameter("name", name)
-                    .getSingleResult();
-            return count > 0;
-        } catch (Exception e) {
-            throw new PharmacyDAOException("Error checking pharmacy existence" +
+
+        EntityManager em = emf.createEntityManager();
+        try{
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Long> query = cb.createQuery(Long.class);
+            Root<Pharmacy> pharmacy = query.from(Pharmacy.class);
+
+            query.select(cb.count(pharmacy))
+                    .where(cb.equal(pharmacy.get("name"),name));
+
+            boolean result = em.createQuery(query).getSingleResult() > 0;
+
+            return result;
+
+        }catch (Exception e) {
+            throw new PharmacyDAOException("Error checking if pharmacy " +
+                    "exists by Name" +
                     " " + e.getMessage());
+        }finally {
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
         }
     }
 }

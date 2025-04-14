@@ -1,10 +1,16 @@
 package gr.aueb.cf.pharmapp.dao;
 
+import gr.aueb.cf.pharmapp.exceptions.PharmacyDAOException;
 import gr.aueb.cf.pharmapp.exceptions.TradeRecordDAOException;
+import gr.aueb.cf.pharmapp.model.Pharmacy;
 import gr.aueb.cf.pharmapp.model.TradeRecord;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 
 import java.time.LocalDateTime;
@@ -22,9 +28,10 @@ public class TradeRecordDAOImpl implements ITradeRecordDAO {
     public TradeRecord save(TradeRecord tradeRecord) throws TradeRecordDAOException {
 
         EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
+        EntityTransaction tx = null;
 
         try{
+            tx = em.getTransaction();
             tx.begin();
             em.persist(tradeRecord);
             tx.commit();
@@ -46,9 +53,9 @@ public class TradeRecordDAOImpl implements ITradeRecordDAO {
     public TradeRecord update(TradeRecord tradeRecord) throws TradeRecordDAOException {
 
         EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
-
+        EntityTransaction tx = null;
         try{
+            tx = em.getTransaction();
             tx.begin();
             TradeRecord merged = em.merge(tradeRecord);
             tx.commit();
@@ -69,15 +76,16 @@ public class TradeRecordDAOImpl implements ITradeRecordDAO {
     public void delete(Long id) throws TradeRecordDAOException {
 
         EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
-
+        EntityTransaction tx = null;
         try{
+            tx = em.getTransaction();
             tx.begin();
             TradeRecord tradeRecord = em.find(TradeRecord.class, id);
             if(tradeRecord != null){
                 em.remove(tradeRecord);
             }
             tx.commit();
+            return;
         } catch (Exception e) {
             if (tx != null && tx.isActive()) {
                 tx.rollback();
@@ -110,76 +118,25 @@ public class TradeRecordDAOImpl implements ITradeRecordDAO {
         EntityManager em = emf.createEntityManager();
 
         try{
-            return em.createQuery(
-                    "SELECT tr FROM TradeRecord tr", TradeRecord.class
-            ).getResultList();
-        } catch (Exception e) {
-            throw new TradeRecordDAOException("Error retrieving all trade records: " + e.getMessage());
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<TradeRecord> query = cb.createQuery(TradeRecord.class);
+            Root<TradeRecord> tr = query.from(TradeRecord.class);
+
+            query.select(tr);
+
+            List<TradeRecord> tradeRecords = em.createQuery(query).getResultList();
+
+            return tradeRecords;
+
+        }catch (Exception e) {
+
+            throw new TradeRecordDAOException("Error retrieving all trade " +
+                    "records: " + e.getMessage());
         }finally {
             if (em != null && em.isOpen()) {
                 em.close();
             }
         }
     }
-
-    @Override
-    public List<TradeRecord> findTradesBetweenPharmacies(Long pharmacy1Id, Long pharmacy2Id,
-                                                         LocalDateTime startDate,
-                                                         LocalDateTime endDate)
-            throws TradeRecordDAOException {
-
-        EntityManager em = emf.createEntityManager();
-        try {
-            String jpql = "SELECT t FROM TradeRecord t WHERE " +
-                    "((t.giver.id = :pharma1Id AND t.receiver.id = :pharma2Id) OR " +
-                    "(t.giver.id = :pharma2Id AND t.receiver.id = :pharma1Id)) AND " +
-                    "t.transactionDate BETWEEN :startDate AND :endDate " +
-                    "ORDER BY t.transactionDate DESC";
-
-            return em.createQuery(jpql, TradeRecord.class)
-                    .setParameter("pharma1Id", pharmacy1Id)
-                    .setParameter("pharma2Id", pharmacy2Id)
-                    .setParameter("startDate", startDate != null ? startDate : LocalDateTime.MIN)
-                    .setParameter("endDate", endDate != null ? endDate : LocalDateTime.MAX)
-                    .getResultList();
-        } catch (Exception e) {
-            throw new TradeRecordDAOException("Error finding trades between pharmacies " + pharmacy1Id +
-                    " and " + pharmacy2Id);
-        } finally {
-            if (em != null && em.isOpen()) {
-                em.close();
-            }
-        }
-    }
-
-    @Override
-    public List<TradeRecord> getRecentTrades(Long pharmacyId, int days)
-            throws TradeRecordDAOException {
-
-        EntityManager em = emf.createEntityManager();
-        try {
-            LocalDateTime cutoffDate = LocalDateTime.now().minusDays(days);
-
-            String jpql = "SELECT t FROM TradeRecord t WHERE " +
-                    "(t.giver.id = :pharmacyId OR t.receiver.id = :pharmacyId) AND " +
-                    "t.transactionDate >= :cutoffDate " +
-                    "ORDER BY t.transactionDate DESC";
-
-            return em.createQuery(jpql, TradeRecord.class)
-                    .setParameter("pharmacyId", pharmacyId)
-                    .setParameter("cutoffDate", cutoffDate)
-                    .getResultList();
-        } catch (Exception e) {
-            throw new TradeRecordDAOException("Error finding recent trades for pharmacy " + pharmacyId);
-        } finally {
-            if (em != null && em.isOpen()) {
-                em.close();
-            }
-        }
-    }
-
-
-
-
 
 }

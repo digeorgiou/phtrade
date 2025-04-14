@@ -14,14 +14,5 @@ public interface ITradeRecordDAO {
     public void delete(Long id) throws TradeRecordDAOException;
     public TradeRecord getById(Long id) throws TradeRecordDAOException;
     public List<TradeRecord> getAll() throws TradeRecordDAOException;
-    public List<TradeRecord> findTradesBetweenPharmacies(Long pharmacy1Id, Long pharmacy2Id,
-                                                         LocalDateTime startDate,
-                                                         LocalDateTime endDate)
-            throws TradeRecordDAOException;
-
-    public List<TradeRecord> getRecentTrades(Long pharmacyId, int days)
-            throws TradeRecordDAOException;
-
-
 
 }
