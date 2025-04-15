@@ -7,19 +7,22 @@ public class TradeRecordReadOnlyDTO extends BaseTradeRecordDTO{
     private Long id;
     private String giverName;
     private String receiverName;
-    private String recorderName;
+    private String recorderUsername;
+    private String lastModifiedByUsername;
     private LocalDateTime transactionDate;
 
     public TradeRecordReadOnlyDTO() {
     }
 
     public TradeRecordReadOnlyDTO(String description, Double amount, Long id,
-                                  String giverName, String receiverName, String recorderName, LocalDateTime transactionDate) {
+                                  String giverName, String receiverName, String recorderUsername,
+                                  String lastModifiedByUsername, LocalDateTime transactionDate) {
         super(description, amount);
         this.id = id;
         this.giverName = giverName;
         this.receiverName = receiverName;
-        this.recorderName = recorderName;
+        this.recorderUsername = recorderUsername;
+        this.lastModifiedByUsername = lastModifiedByUsername;
         this.transactionDate = transactionDate;
     }
 
@@ -47,12 +50,20 @@ public class TradeRecordReadOnlyDTO extends BaseTradeRecordDTO{
         this.receiverName = receiverName;
     }
 
-    public String getRecorderName() {
-        return recorderName;
+    public String getRecorderUsername() {
+        return recorderUsername;
     }
 
-    public void setRecorderName(String recorderName) {
-        this.recorderName = recorderName;
+    public void setRecorderUsername(String recorderUsername) {
+        this.recorderUsername = recorderUsername;
+    }
+
+    public String getLastModifiedByUsername() {
+        return lastModifiedByUsername;
+    }
+
+    public void setLastModifiedByUsername(String lastModifiedByUsername) {
+        this.lastModifiedByUsername = lastModifiedByUsername;
     }
 
     public LocalDateTime getTransactionDate() {

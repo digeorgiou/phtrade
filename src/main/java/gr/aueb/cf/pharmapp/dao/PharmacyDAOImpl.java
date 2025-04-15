@@ -142,7 +142,6 @@ public class PharmacyDAOImpl implements  IPharmacyDAO{
 
                 List<Pharmacy> pharmacies = em.createQuery(query).getResultList();
 
-
                 return pharmacies;
 
 

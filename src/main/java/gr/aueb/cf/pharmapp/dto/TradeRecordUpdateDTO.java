@@ -7,18 +7,18 @@ public class TradeRecordUpdateDTO extends BaseTradeRecordDTO{
     private Long id;
     private Long giverPharmacyId;
     private Long receiverPharmacyId;
-    private Long recorderPharmacyId;
+    private Long updaterUserId;
 
     public TradeRecordUpdateDTO() {
     }
 
     public TradeRecordUpdateDTO(String description, Double amount, LocalDateTime transactionDate,
-                                  Long id, Long giverPharmacyId, Long receiverPharmacyId, Long recorderPharmacyId) {
+                                  Long id, Long giverPharmacyId, Long receiverPharmacyId, Long updaterUserIdId) {
         super(description, amount);
         this.id = id;
         this.giverPharmacyId = giverPharmacyId;
         this.receiverPharmacyId = receiverPharmacyId;
-        this.recorderPharmacyId = recorderPharmacyId;
+        this.updaterUserId = updaterUserId;
     }
 
     public Long getId() {
@@ -45,11 +45,11 @@ public class TradeRecordUpdateDTO extends BaseTradeRecordDTO{
         this.receiverPharmacyId = receiverPharmacyId;
     }
 
-    public Long getRecorderPharmacyId() {
-        return recorderPharmacyId;
+    public Long getUpdaterUserId() {
+        return updaterUserId;
     }
 
-    public void setRecorderPharmacyId(Long recorderPharmacyId) {
-        this.recorderPharmacyId = recorderPharmacyId;
+    public void setUpdaterUserId(Long updaterUserId) {
+        this.updaterUserId = updaterUserId;
     }
 }

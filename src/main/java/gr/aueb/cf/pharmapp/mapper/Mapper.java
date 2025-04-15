@@ -19,7 +19,7 @@ public class Mapper {
     }
 
     public static Pharmacy mapPharmacyUpdateToModel(PharmacyUpdateDTO dto,
-                                                   Pharmacy existing){
+                                                    Pharmacy existing){
         existing.setName(dto.getName());
         return existing;
     }
@@ -34,8 +34,10 @@ public class Mapper {
         ));
     }
 
-    public static UserReadOnlyDTO mapToReadOnlyDTO(User user) {
-        return new UserReadOnlyDTO(user.getId(), user.getUsername(), user.getPassword());
+    public static Optional<UserReadOnlyDTO> mapToReadOnlyDTO(User user) {
+        if(user == null) return Optional.empty();
+        return Optional.of(new UserReadOnlyDTO(user.getId(), user.getUsername(),
+                user.getPassword(), user.getRoleType().toString()));
     }
 
     public static User mapToUser(UserInsertDTO dto) {
@@ -47,10 +49,17 @@ public class Mapper {
 
     }
 
+    public static User mapUserUpdateToModel(UserUpdateDTO dto,
+                                            User existingUser){
+        existingUser.setPassword(dto.getPassword());
+        existingUser.setUsername(dto.getUsername());
+        return existingUser;
+    }
+
     public static TradeRecord mapTradeRecordInsertToModel(TradeRecordInsertDTO dto,
                                                           Pharmacy giver,
                                                           Pharmacy receiver,
-                                                          Pharmacy recorder) {
+                                                          User recorder) {
         TradeRecord record = new TradeRecord();
         record.setDescription(dto.getDescription());
         record.setAmount(dto.getAmount());
@@ -65,12 +74,12 @@ public class Mapper {
                                                           TradeRecord existing,
                                                           Pharmacy giver,
                                                           Pharmacy receiver,
-                                                          Pharmacy recorder) {
+                                                          User updater) {
         existing.setDescription(dto.getDescription());
         existing.setAmount(dto.getAmount());
         existing.setGiver(giver);
         existing.setReceiver(receiver);
-        existing.setRecorder(recorder);
+        existing.setLastModifiedBy(updater);
         return existing;
     }
 
@@ -83,7 +92,9 @@ public class Mapper {
                 record.getId(),
                 record.getGiver() != null ? record.getGiver().getName() : null,
                 record.getReceiver() != null ? record.getReceiver().getName() : null,
-                record.getRecorder() != null ? record.getRecorder().getName() : null,
+                record.getRecorder() != null ? record.getRecorder().getUsername() : null,
+                record.getLastModifiedBy() != null ?
+                        record.getLastModifiedBy().getUsername() : null,
                 record.getTransactionDate()
         ));
     }

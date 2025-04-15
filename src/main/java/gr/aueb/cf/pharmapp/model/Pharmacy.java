@@ -19,7 +19,7 @@ public class Pharmacy {
     @Column(name = "name", length = 255, unique = true, nullable = false)
     private String name;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @OneToOne(mappedBy = "pharmacy")
@@ -31,27 +31,24 @@ public class Pharmacy {
     @OneToMany(mappedBy = "receiver")
     private Set<TradeRecord> recordsReceiver;
 
-    @OneToMany(mappedBy = "recorder")
-    private Set<TradeRecord> recordsRecorder;
 
     public Pharmacy() {
+        this.createdAt = LocalDateTime.now();
     }
 
     public Pharmacy(String name){
         this();
         this.name = name;
-        this.createdAt = LocalDateTime.now();
     }
 
     public Pharmacy(Long id, String name, LocalDateTime createdAt, User user,
-                    Set<TradeRecord> recordsGiver, Set<TradeRecord> recordsReceiver, Set<TradeRecord> recordsRecorder) {
+                    Set<TradeRecord> recordsGiver, Set<TradeRecord> recordsReceiver) {
         this.id = id;
         this.name = name;
         this.createdAt = createdAt;
         this.user = user;
         this.recordsGiver = recordsGiver;
         this.recordsReceiver = recordsReceiver;
-        this.recordsRecorder = recordsRecorder;
     }
 
     public Long getId() {
@@ -110,19 +107,6 @@ public class Pharmacy {
         this.recordsReceiver = recordsReceiver;
     }
 
-    protected Set<TradeRecord> getRecordsRecorder() {
-        return recordsRecorder;
-    }
-
-    public Set<TradeRecord> getAllRecordsRecorder() {
-        return Collections.unmodifiableSet(recordsRecorder);
-    }
-
-    public void setRecordsRecorder(Set<TradeRecord> recordsRecorder) {
-        this.recordsRecorder = recordsRecorder;
-    }
-
-
     public void addRecordGiver(TradeRecord tradeRecord){
         if (recordsGiver == null) recordsGiver = new HashSet<>();
         recordsGiver.add(tradeRecord);
@@ -145,16 +129,7 @@ public class Pharmacy {
         tradeRecord.setReceiver(null);
     }
 
-    public void addRecordRecorder(TradeRecord tradeRecord){
-        if (recordsRecorder == null) recordsRecorder = new HashSet<>();
-        recordsRecorder.add(tradeRecord);
-            tradeRecord.setRecorder(this);
-    }
 
-    public void removeRecordRecorder(TradeRecord tradeRecord){
-        recordsRecorder.remove(tradeRecord);
-        tradeRecord.setRecorder(null);
-    }
 
     @Override
     public String toString() {

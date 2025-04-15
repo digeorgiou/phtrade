@@ -31,7 +31,16 @@ public class TradeRecord {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recorder_id")
-    private Pharmacy recorder;
+    private User recorder;
+
+    @Column(name = "deleted_by_giver")
+    private boolean deletedByGiver = false;
+
+    @Column(name = "deleted_by_receiver")
+    private boolean deletedByReceiver = false;
+
+    @Column(name = "last_modified_by")
+    private User lastModifiedBy;
 
     @Column(name = "transaction_date")
     private LocalDateTime transactionDate;
@@ -39,14 +48,19 @@ public class TradeRecord {
     public TradeRecord() {
     }
 
-    public TradeRecord(Long id, String description, Double amount, Pharmacy giver,
-                       Pharmacy receiver, Pharmacy recorder, LocalDateTime transactionDate) {
+    public TradeRecord(Long id, String description, Double amount, Pharmacy giver, Pharmacy receiver,
+                       User recorder, boolean deletedByGiver,
+                       boolean deletedByReceiver, User lastModifiedBy,
+                       LocalDateTime transactionDate) {
         this.id = id;
         this.description = description;
         this.amount = amount;
         this.giver = giver;
         this.receiver = receiver;
         this.recorder = recorder;
+        this.deletedByGiver = deletedByGiver;
+        this.deletedByReceiver = deletedByReceiver;
+        this.lastModifiedBy = lastModifiedBy;
         this.transactionDate = transactionDate;
     }
 
@@ -90,11 +104,11 @@ public class TradeRecord {
         this.receiver = receiver;
     }
 
-    public Pharmacy getRecorder() {
+    public User getRecorder() {
         return recorder;
     }
 
-    public void setRecorder(Pharmacy recorder) {
+    public void setRecorder(User recorder) {
         this.recorder = recorder;
     }
 
@@ -104,6 +118,31 @@ public class TradeRecord {
 
     public void setTransactionDate(LocalDateTime transactionDate) {
         this.transactionDate = transactionDate;
+    }
+
+
+    public boolean isDeletedByGiver() {
+        return deletedByGiver;
+    }
+
+    public void setDeletedByGiver(boolean deletedByGiver) {
+        this.deletedByGiver = deletedByGiver;
+    }
+
+    public boolean isDeletedByReceiver() {
+        return deletedByReceiver;
+    }
+
+    public void setDeletedByReceiver(boolean deletedByReceiver) {
+        this.deletedByReceiver = deletedByReceiver;
+    }
+
+    public User getLastModifiedBy() {
+        return lastModifiedBy;
+    }
+
+    public void setLastModifiedBy(User lastModifiedBy) {
+        this.lastModifiedBy = lastModifiedBy;
     }
 
     @Override

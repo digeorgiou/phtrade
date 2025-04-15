@@ -10,8 +10,6 @@ public class BaseTradeRecordDTO {
 
     private Double amount;
 
-
-
     public BaseTradeRecordDTO() {
     }
 
