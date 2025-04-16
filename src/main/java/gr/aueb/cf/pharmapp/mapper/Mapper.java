@@ -3,6 +3,7 @@ package gr.aueb.cf.pharmapp.mapper;
 import gr.aueb.cf.pharmapp.core.RoleType;
 import gr.aueb.cf.pharmapp.dto.*;
 import gr.aueb.cf.pharmapp.model.Pharmacy;
+import gr.aueb.cf.pharmapp.model.PharmacyContact;
 import gr.aueb.cf.pharmapp.model.TradeRecord;
 import gr.aueb.cf.pharmapp.model.User;
 import gr.aueb.cf.pharmapp.security.SecurityUtil;
@@ -37,12 +38,13 @@ public class Mapper {
     public static Optional<UserReadOnlyDTO> mapToReadOnlyDTO(User user) {
         if(user == null) return Optional.empty();
         return Optional.of(new UserReadOnlyDTO(user.getId(), user.getUsername(),
-                user.getPassword(), user.getRoleType().toString()));
+                user.getPassword(), user.getRoleType().toString(), user.getEmail()));
     }
 
     public static User mapToUser(UserInsertDTO dto) {
         User user = new User();
         user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
         user.setPassword(SecurityUtil.hashPassword(dto.getPassword()));
         user.setRoleType(RoleType.valueOf(dto.getRole()));
         return user;
@@ -52,6 +54,7 @@ public class Mapper {
     public static User mapUserUpdateToModel(UserUpdateDTO dto,
                                             User existingUser){
         existingUser.setPassword(dto.getPassword());
+        existingUser.setEmail(dto.getEmail());
         existingUser.setUsername(dto.getUsername());
         return existingUser;
     }
@@ -99,7 +102,23 @@ public class Mapper {
         ));
     }
 
+    public static Optional<BasePharmacyContactDTO> mapContactToDTO(PharmacyContact contact){
+        if (contact == null) return Optional.empty();
+        return Optional.of(new BasePharmacyContactDTO(
+                contact.getId(),
+                contact.getUser() != null ? contact.getUser().getId() : null,
+                contact.getPharmacy() != null ? contact.getPharmacy().getId() : null,
+                contact.getContactName(),
+                contact.getPharmacy() != null ? contact.getPharmacy().getName() : null
+        ));
+    }
 
+    public static PharmacyContact mapContactDTOtoModel(BasePharmacyContactDTO dto){
+        PharmacyContact contact = new PharmacyContact();
+        contact.setContactName(dto.getContactName());
+        contact.setId(dto.getId());
+        return contact;
+    }
 
 
 }

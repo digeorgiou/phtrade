@@ -261,4 +261,26 @@ public class UserDAOImpl implements IUserDAO{
             }
         }
     }
+
+    @Override
+    public boolean emailExists(String email) throws UserDAOException {
+        EntityManager em = emf.createEntityManager();
+        try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Long> query = cb.createQuery(Long.class);
+            Root<User> root = query.from(User.class);
+
+            query.select(cb.count(root))
+                    .where(cb.equal(root.get("email"), email));
+
+            return em.createQuery(query).getSingleResult() > 0;
+
+        } catch (Exception e) {
+            throw new UserDAOException("Error checking email existence " + e.getMessage());
+        } finally {
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
+        }
+    }
 }

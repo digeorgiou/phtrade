@@ -8,8 +8,8 @@ public class UserReadOnlyDTO extends BaseUserDTO {
     public UserReadOnlyDTO() {}
 
     public UserReadOnlyDTO(Long id, String username, String password,
-                           String role) {
-        super(username, password);
+                           String role, String email) {
+        super(username, password, email);
         this.id = id;
         this.role = role;
     }

@@ -2,6 +2,7 @@ package gr.aueb.cf.pharmapp.model;
 
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
@@ -10,7 +11,8 @@ import java.util.Set;
 
 @Entity
 @Table(name = "pharmacies")
-public class Pharmacy {
+public class Pharmacy implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +24,8 @@ public class Pharmacy {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @OneToOne(mappedBy = "pharmacy")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id" )
     private User user;
 
     @OneToMany(mappedBy = "giver")
@@ -30,6 +33,9 @@ public class Pharmacy {
 
     @OneToMany(mappedBy = "receiver")
     private Set<TradeRecord> recordsReceiver;
+
+    @OneToMany(mappedBy = "pharmacy")
+    private Set<PharmacyContact> contactReferences = new HashSet<>();
 
 
     public Pharmacy() {
@@ -42,13 +48,15 @@ public class Pharmacy {
     }
 
     public Pharmacy(Long id, String name, LocalDateTime createdAt, User user,
-                    Set<TradeRecord> recordsGiver, Set<TradeRecord> recordsReceiver) {
+                    Set<TradeRecord> recordsGiver, Set<TradeRecord> recordsReceiver,
+                    Set<PharmacyContact> contactReferences) {
         this.id = id;
         this.name = name;
         this.createdAt = createdAt;
         this.user = user;
         this.recordsGiver = recordsGiver;
         this.recordsReceiver = recordsReceiver;
+        this.contactReferences = contactReferences;
     }
 
     public Long getId() {
@@ -129,7 +137,13 @@ public class Pharmacy {
         tradeRecord.setReceiver(null);
     }
 
+    public Set<PharmacyContact> getContactReferences() {
+        return contactReferences;
+    }
 
+    public void setContactReferences(Set<PharmacyContact> contactReferences) {
+        this.contactReferences = contactReferences;
+    }
 
     @Override
     public String toString() {

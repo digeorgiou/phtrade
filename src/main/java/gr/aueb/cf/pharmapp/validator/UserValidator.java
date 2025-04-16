@@ -43,10 +43,18 @@ public class UserValidator<T> {
                 errors.put("password", "Το password δεν πρέπει να περιλαμβάνει κενά");
             }
 
+            if (!dto.getEmail().matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")){
+                errors.put("email", "Το email δεν είναι έγκυρο");
+            }
+
+
             if(userService.usernameExists(dto.getUsername())){
                 errors.put("username", "Το username χρησιμοποιείται");
             }
 
+            if(userService.emailExists(dto.getEmail())){
+                errors.put("email", "Το email χρησιμοποιείται");
+            }
             return errors;
         }
 }

@@ -183,45 +183,6 @@ public class PharmacyDAOImpl implements  IPharmacyDAO{
         }
     }
 
-    @Override
-    public void linkUserToPharmacy(User user, Pharmacy pharmacy) throws PharmacyDAOException {
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
-
-        try{
-            tx.begin();
-
-            // Refreshing entities to ensure we're working with managed
-            // instances
-            User managedUser = em.find(User.class, user.getId());
-            Pharmacy managedPharmacy = em.find(Pharmacy.class,
-                    pharmacy.getId());
-
-
-            if(managedUser.getPharmacy() != null){
-                managedUser.getPharmacy().setUser(null);
-            }
-            if(managedPharmacy.getUser() != null){
-                managedPharmacy.getUser().setPharmacy(null);
-            }
-
-            managedUser.setPharmacy(managedPharmacy);
-            managedPharmacy.setUser(managedUser);
-
-            tx.commit();
-
-        } catch(Exception e){
-            if(tx != null && tx.isActive() ){
-                tx.rollback();
-            }
-            throw new PharmacyDAOException("Error in linking pharmacy with " +
-                    "user " + e.getMessage());
-        } finally {
-            if (em != null && em.isOpen()) {
-                em.close();
-            }
-        }
-    }
 
     @Override
     public boolean existsByName(String name) throws PharmacyDAOException {

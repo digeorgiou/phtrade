@@ -4,12 +4,14 @@ package gr.aueb.cf.pharmapp.model;
 import gr.aueb.cf.pharmapp.core.RoleType;
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,27 +23,36 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "email", nullable = false)
+    private String email;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role" , updatable = false)
     private RoleType roleType;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user")
     private Set<Pharmacy> pharmacies = new HashSet<>();
 
     @OneToMany(mappedBy = "recorder")
     private Set<TradeRecord> recordsRecorder;
 
+    @OneToMany(mappedBy = "user")
+    private Set<PharmacyContact> contacts = new HashSet<>();
+
 
     public User() {
     }
 
-    public User(Long id, String username, String password, RoleType roleType, Set<Pharmacy> pharmacies, Set<TradeRecord> recordsRecorder) {
+    public User(Long id, String username, String password, String email, RoleType roleType,
+                Set<Pharmacy> pharmacies, Set<TradeRecord> recordsRecorder, Set<PharmacyContact> contacts) {
         this.id = id;
         this.username = username;
         this.password = password;
+        this.email = email;
         this.roleType = roleType;
         this.pharmacies = pharmacies;
         this.recordsRecorder = recordsRecorder;
+        this.contacts = contacts;
     }
 
     public Long getId() {
@@ -90,6 +101,22 @@ public class User {
 
     public void setRecordsRecorder(Set<TradeRecord> recordsRecorder) {
         this.recordsRecorder = recordsRecorder;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Set<PharmacyContact> getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(Set<PharmacyContact> contacts) {
+        this.contacts = contacts;
     }
 
     public void addRecordRecorder(TradeRecord tradeRecord){

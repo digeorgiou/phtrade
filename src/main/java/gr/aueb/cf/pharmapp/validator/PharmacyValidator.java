@@ -27,8 +27,8 @@ public class PharmacyValidator {
             throws PharmacyDAOException{
         Map<String, String> errors = new HashMap<>();
 
-        if(dto.getName().length() < 2 || dto.getName().length() > 50){
-            errors.put("name", "Το όνομα πρέπει να ειναι μεταξύ 2 και 50 " +
+        if(dto.getName().length() < 10 || dto.getName().length() > 50){
+            errors.put("name", "Το όνομα πρέπει να ειναι μεταξύ 10 και 50 " +
                     "χαρακτήρες");
         }
 

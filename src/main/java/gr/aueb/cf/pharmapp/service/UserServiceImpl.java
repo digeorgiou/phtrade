@@ -120,7 +120,7 @@ public class UserServiceImpl implements IUserService{
     }
 
     @Override
-    public boolean authenticate(UserLoginDTO userLoginDTO) throws UserDAOException {
+    public boolean authenticate(UserLoginDTO userLoginDTO) throws UserDAOException, UserNotFoundException {
         try{
             return userDAO.isUserValid(userLoginDTO.getUsername(),
                     userLoginDTO.getPassword());
@@ -133,6 +133,14 @@ public class UserServiceImpl implements IUserService{
         try{
             return userDAO.usernameExists(username);
         } catch (UserDAOException e){
+            throw e;
+        }
+    }
+
+    public boolean emailExists(String email) throws UserDAOException {
+        try{
+            return userDAO.emailExists(email);
+        }catch (UserDAOException e){
             throw e;
         }
     }

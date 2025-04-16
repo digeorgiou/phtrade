@@ -5,9 +5,12 @@ public class UserInsertDTO extends BaseUserDTO{
     private String role;
     private Long pharmacyId;
 
+    public UserInsertDTO() {
+    }
+
     public UserInsertDTO(String username, String password, String confirmedPassword,
-             String role) {
-        super(username, password, confirmedPassword);
+                         String email, String role) {
+        super(username, password, confirmedPassword, email);
         this.role = role;
     }
 

@@ -2,12 +2,14 @@ package gr.aueb.cf.pharmapp.model;
 
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
 @Entity
 @Table(name = "trade_records")
-public class TradeRecord {
+public class TradeRecord implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

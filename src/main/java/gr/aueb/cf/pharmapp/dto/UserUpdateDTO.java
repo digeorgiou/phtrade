@@ -7,8 +7,8 @@ public class UserUpdateDTO extends BaseUserDTO{
     }
 
     public UserUpdateDTO(String username, String password,
-                         String confirmedPassword, Long id) {
-        super(username, password, confirmedPassword);
+                         String confirmedPassword, String email, Long id) {
+        super(username, password, confirmedPassword, email);
         this.id = id;
     }
 

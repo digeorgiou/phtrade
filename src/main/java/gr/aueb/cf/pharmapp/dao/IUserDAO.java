@@ -18,4 +18,5 @@ public interface IUserDAO {
     public boolean isAdmin(Long userId) throws UserDAOException;
     public User findByPharmacy(Pharmacy pharmacy) throws UserDAOException;
     public boolean usernameExists(String username) throws UserDAOException;
+    boolean emailExists(String email) throws UserDAOException;
 }

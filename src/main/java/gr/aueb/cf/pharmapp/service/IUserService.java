@@ -21,6 +21,7 @@ public interface IUserService {
             UserDAOException;
     boolean authenticate(UserLoginDTO userLoginDTO)  throws UserNotFoundException, UserDAOException;
     boolean usernameExists(String username) throws UserDAOException;
+    boolean emailExists(String email) throws UserDAOException;
     UserReadOnlyDTO assignUserToPharmacy(Long userId, Long pharmacyId, Long adminUserId)
             throws UserNotFoundException, PharmacyNotFoundException, UserAnauthorizedException,
             UserDAOException;
