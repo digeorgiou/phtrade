@@ -27,6 +27,11 @@ public class UserValidator<T> {
                 throws UserDAOException {
             Map<String, String> errors = new HashMap<>();
 
+            if (dto.getUsername().length() < 5 || dto.getPassword().length() > 32 ) {
+                errors.put("username", "Το username πρέπει να είναι μεταξύ 5 " +
+                        "και 32 χαρακτήρες");
+            }
+
             if (!dto.getPassword().equals(dto.getConfirmedPassword())) {
                 errors.put("confirmPassword", "Το password και το confirmedPassword δεν είναι ίδια.");
             }
@@ -47,6 +52,9 @@ public class UserValidator<T> {
                 errors.put("email", "Το email δεν είναι έγκυρο");
             }
 
+            if(!dto.isTermsAccepted()){
+                errors.put("terms", "Πρέπει να αποδεχθείτε τους όρους");
+            }
 
             if(userService.usernameExists(dto.getUsername())){
                 errors.put("username", "Το username χρησιμοποιείται");

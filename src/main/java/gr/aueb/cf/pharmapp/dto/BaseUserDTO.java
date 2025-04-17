@@ -5,6 +5,7 @@ public abstract class BaseUserDTO {
     private String password;
     private String confirmedPassword;
     private String email;
+    private boolean isTermsAccepted;
 
     public BaseUserDTO() {
     }
@@ -25,6 +26,14 @@ public abstract class BaseUserDTO {
         this.password = password;
         this.confirmedPassword = confirmedPassword;
         this.email = email;
+    }
+
+    public BaseUserDTO(String username, String password, String confirmedPassword, String email, boolean isTermsAccepted) {
+        this.username = username;
+        this.password = password;
+        this.confirmedPassword = confirmedPassword;
+        this.email = email;
+        this.isTermsAccepted = isTermsAccepted;
     }
 
     public String getUsername() {
@@ -57,5 +66,13 @@ public abstract class BaseUserDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public boolean isTermsAccepted() {
+        return isTermsAccepted;
+    }
+
+    public void setTermsAccepted(boolean termsAccepted) {
+        isTermsAccepted = termsAccepted;
     }
 }

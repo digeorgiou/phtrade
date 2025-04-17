@@ -90,22 +90,40 @@
         .valid-feedback, .invalid-feedback {
             font-size: 0.85rem;
         }
+
+        .invalid-feedback.d-block {
+            display: block !important;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
     </style>
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg">
-        <div class="container">
+        <div class="container-fluid d-flex justify-content-between
+        align-items-center ms-3">
+            <!-- Logo -->
             <a class="navbar-brand" href="${pageContext.request.contextPath}/">
-                <img src="${pageContext.request.contextPath}/img/pharmalogo.png" alt="PharmaTrade Logo" style="height: 50px;">
+                <img src="${pageContext.request.contextPath}/img/pharmalogo.png"
+                     alt="PharmaTrade Logo"
+                     style="height: 50px;">
             </a>
+
+            <!-- Welcome Message (centered) -->
+            <div class="position-absolute start-50 translate-middle-x">
+                <span class="navbar-text fw-bold fs-4" style="color: #343a40;">
+                    Καλώς ήρθατε στην Εφαρμογή
+                </span>
+            </div>
         </div>
     </nav>
 
     <!-- Main Registration Form -->
     <div class="container">
         <div class="register-container">
-            <h2 class="text-center mb-4">Create Account</h2>
+            <h2 class="text-center mb-4">Δημιουργία Λογαριασμού</h2>
 
             <%-- Display error message if registration fails --%>
             <c:if test="${not empty errorMessage}">
@@ -114,33 +132,59 @@
                 </div>
             </c:if>
 
-            document.getElementById('registerForm').addEventListener('submit', function(e) {
-                // Clear previous server errors
-                document.querySelectorAll('.server-error').forEach(el => el.remove());
+           <form id="registerForm" novalidate action="${pageContext.request
+            .contextPath}/register" method="POST">
 
-                // Client-side validation
-                if (!this.checkValidity()) {
-                    e.preventDefault();
-                    this.classList.add('was-validated');
-                }
-            });
+                <!-- Username Field -->
+                <div class="mb-3">
+                    <label for="username" class="form-label">Όνομα
+                    Χρήστη</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                        <input type="text" class="form-control ${not empty usernameMessage ? 'is-invalid' : ''}"
+                               id="username" name="username" value="${not empty param.username ? param.username : ''}">
+                    </div>
+                    <c:if test="${empty usernameMessage}">
+                        <div class="form-text">
+                                Τουλάχιστον 5 χαρακτήρες
+                        </div>
+                    </c:if>
+                    <c:if test="${not empty usernameMessage}">
+                        <div class="invalid-feedback d-block">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <small>
+                            ${requestScope.usernameMessage}
+                            </small>
+                        </div>
+                    </c:if>
+                </div>
 
+
+                <!-- Email Field -->
                 <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                        <input type="email" class="form-control ${not empty emailMessage ? 'is-invalid' : ''}"
+                               id="email" name="email" value="${param.email}">
                     </div>
-                    <div class="invalid-feedback">Please provide a valid email address</div>
+                    <c:if test="${not empty emailMessage}">
+                        <div class="invalid-feedback d-block">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <small>
+                             ${emailMessage}
+                             </small>
+                        </div>
+                    </c:if>
                 </div>
 
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
+                    <label for="password" class="form-label">Κωδικός</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                        <input type="password" class="form-control is-invalid"
-                        id="password" name="password"
-                               required minlength="8" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$">
+                        <input type="password" class="form-control ${not empty
+                        passwordMessage ? 'is-invalid' : ''}"
+                        id="password" name="password">
                         <button class="btn btn-outline-secondary toggle-password" type="button">
                             <i class="bi bi-eye-fill"></i>
                         </button>
@@ -148,51 +192,82 @@
                     <div class="password-strength">
                         <div class="password-strength-bar"></div>
                     </div>
-                    <div class="form-text">
-                        Minimum 8 characters with at least 1 uppercase, 1 lowercase, and 1 number
-                    </div>
-                    <div class="invalid-feedback">
-                        Password must be at least 8 characters with uppercase, lowercase, and number
-                    </div>
+                    <c:if test="${empty passwordMessage}">
+                        <div class="form-text">
+                            Τουλάχιστον 5 χαρακτήρες
+                        </div>
+                    </c:if>
+                    <c:if test="${not empty passwordMessage}">
+                        <div class="invalid-feedback d-block">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <small>
+                            ${requestScope.passwordMessage}
+                            </small>
+                        </div>
+                    </c:if>
                 </div>
 
                 <div class="mb-3">
-                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <label for="confirmPassword"
+                    class="form-label">Επιβεβαίωση Κωδικού</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                        <input type="password" class="form-control" id="confirmPassword"
-                               required minlength="8">
+                        <input type="password" class="form-control ${not empty
+                        confirmPasswordMessage ? 'is-invalid' : ''}"
+                        id="confirmPassword" name="confirmPassword" required>
                         <button class="btn btn-outline-secondary toggle-password" type="button">
                             <i class="bi bi-eye-fill"></i>
                         </button>
                     </div>
-                    <div class="password-match text-success" id="passwordMatch" style="display: none;">
-                        <i class="bi bi-check-circle-fill"></i> Passwords match
-                    </div>
-                    <div class="password-match text-danger" id="passwordMismatch" style="display: none;">
-                        <i class="bi bi-exclamation-circle-fill"></i> Passwords don't match
-                    </div>
-                    <div class="invalid-feedback">Passwords must match</div>
+                    <c:if test="${empty passwordMessage}">
+                        <div class="password-match text-success" id="passwordMatch" style="display: none;">
+                            <i class="bi bi-check-circle-fill"></i> Οι κωδικοί
+                            ταιριάζουν
+                        </div>
+                        <div class="password-match text-danger" id="passwordMismatch" style="display: none;">
+                            <i class="bi bi-exclamation-circle-fill"></i> Οι
+                            κωδικοί δεν ταιριάζουν
+                        </div>
+                    </c:if>
+                    <c:if test="${not empty confirmPasswordMessage}">
+                        <div class="invalid-feedback d-block">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <small>
+                            ${requestScope.confirmPasswordMessage}
+                            </small>
+                        </div>
+                    </c:if>
                 </div>
 
                 <!-- Terms and Conditions -->
                 <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="terms" required>
+                    <input type="checkbox" class="form-check-input}" id="terms"
+                    name="terms" required
+                    ${param.terms != null ? 'checked' : ''}>
                     <label class="form-check-label" for="terms">
-                        I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+                        Συμφωνώ με <a href="#" data-bs-toggle="modal"
+                        data-bs-target="#termsModal">Όροι και Προϋποθέσεις</a>
                     </label>
-                    <div class="invalid-feedback">You must agree to the terms and conditions</div>
+                    <c:if test="${not empty termsMessage}">
+                        <div class="invalid-feedback d-block">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <small>
+                            ${requestScope.termsMessage}
+                            </small>
+                        </div>
+                    </c:if>
                 </div>
 
                 <!-- Register Button -->
                 <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                    <button type="submit" class="btn btn-primary btn-lg">Εγγραφή</button>
                 </div>
 
                 <!-- Login Link -->
                 <div class="text-center auth-links">
-                    <span class="text-muted">Already have an account?</span>
-                    <a href="${pageContext.request.contextPath}/login" class="text-decoration-none ms-1">Login here</a>
+                    <span class="text-muted">Έχετε ήδη λογαριασμό</span>
+                    <a href="${pageContext.request.contextPath}/login"
+                    class="text-decoration-none ms-1">Συνδεθείτε εδώ</a>
                 </div>
             </form>
         </div>
@@ -201,7 +276,7 @@
     <!-- Footer -->
     <footer>
         <div class="container text-center">
-            <p class="mb-0">© 2023 PharmaTrade. All rights reserved.</p>
+            <p class="mb-0">© 2025 Coding Factory. All rights reserved.</p>
         </div>
     </footer>
 
@@ -214,20 +289,22 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <h6>1. Acceptance of Terms</h6>
-                    <p>By registering for an account with PharmaTrade, you agree to be bound by these Terms and Conditions...</p>
+                    <h6>1. Αποδοχή Όρων </h6>
+                    <p>Ολοκληρώνοντας την εγγραφή σας συμφωνείτε με τους
+                    παρακάτω όρους και προϋποθέσεις</p>
 
-                    <h6>2. User Responsibilities</h6>
-                    <p>You are responsible for maintaining the confidentiality of your account and password...</p>
+                    <h6>2. Ευθύνη Χρήστη</h6>
+                    <p>Είστε υπεύθυνοι για την διατήρηση της εμπιστευτικότητας
+                    του λογαριασμού και του κωδικού πρόσβασης σας
+                    </p>
 
-                    <h6>3. Privacy Policy</h6>
-                    <p>Your personal information will be handled in accordance with our Privacy Policy...</p>
-
-                    <h6>4. Prohibited Activities</h6>
-                    <p>You agree not to use the service for any unlawful purpose or in any way that might harm...</p>
+                    <h6>3. Απαγορευμένες δραστηριότητες </h6>
+                    <p>Συμφωνείτε να μην χρησιμοποιείται την εφαρμογή για
+                    παράνομους σκοπούς</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
+                    <button type="button" class="btn btn-primary"
+                    data-bs-dismiss="modal">Κατάλαβα</button>
                 </div>
             </div>
         </div>
@@ -238,7 +315,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Form validation
+
             const form = document.getElementById('registerForm');
             const password = document.getElementById('password');
             const confirmPassword = document.getElementById('confirmPassword');
@@ -255,14 +332,6 @@
                     this.querySelector('i').classList.toggle('bi-eye-fill');
                     this.querySelector('i').classList.toggle('bi-eye-slash-fill');
                 });
-            });
-
-            document.getElementById('username').addEventListener('input', function() {
-              const isValid = this.value.length >= 4 && /^[a-zA-Z0-9]+$/.test(this.value);
-
-              if (this.value.length > 0) {
-                this.classList.toggle('is-invalid', !isValid);
-              }
             });
 
 
@@ -291,18 +360,6 @@
                 }
             });
 
-            // Form submission
-            document.getElementById('registerForm').addEventListener('submit', function(e) {
-              // Manually check all fields
-              const username = document.getElementById('username');
-              const isUsernameValid = username.value.length >= 4;
-
-              if (!isUsernameValid) {
-                e.preventDefault();
-                username.classList.add('is-invalid');
-                this.classList.add('was-validated'); // <-- This activates messages
-              }
-            });
 
             // Calculate password strength
             function calculatePasswordStrength(password) {

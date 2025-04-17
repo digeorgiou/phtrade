@@ -6,6 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PharmaTrade - Login</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -24,7 +28,7 @@
         }
 
         .login-container {
-            max-width: 400px;
+            max-width: 500px;
             margin: auto;
             padding: 2rem;
             background-color: #b9dae1;
@@ -68,12 +72,23 @@
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="index.jsp">
-                <img src="${pageContext.request.contextPath}/img/pharmalogo.png" alt="PharmaTrade Logo" style="height: 50px;">
-            </a>
-        </div>
-    </nav>
+            <div class="container-fluid d-flex justify-content-between
+            align-items-center ms-3">
+                <!-- Logo -->
+                <a class="navbar-brand" href="${pageContext.request.contextPath}/">
+                    <img src="${pageContext.request.contextPath}/img/pharmalogo.png"
+                         alt="PharmaTrade Logo"
+                         style="height: 50px;">
+                </a>
+
+                <!-- Welcome Message (centered) -->
+                <div class="position-absolute start-50 translate-middle-x">
+                    <span class="navbar-text fw-bold fs-4" style="color: #343a40;">
+                        Καλώς ήρθατε στην Εφαρμογή
+                    </span>
+                </div>
+            </div>
+        </nav>
 
     <!-- Main Login Form -->
     <div class="container">
@@ -82,7 +97,7 @@
                 <img src="${pageContext.request.contextPath}/img/pharmalogo.png" alt="PharmaTrade Logo">
             </div>
 
-            <h2 class="text-center mb-4">Sign In</h2>
+            <h2 class="text-center mb-4">Σύνδεση</h2>
 
             <%-- Display error message if authentication fails --%>
             <c:if test="${not empty error}">
@@ -92,36 +107,56 @@
             </c:if>
 
             <form action="${pageContext.request.contextPath}/login" method="POST">
+                <!-- Username Field -->
                 <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
+                    <label for="username" class="form-label">Όνομα Χρήστη</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                        <input type="text" class="form-control" id="username" name="username" required>
+                        <input type="text" class="form-control ${not empty usernameMessage ? 'is-invalid' : ''}"
+                               id="username" name="username" required value="${param.username}">
                     </div>
+                    <c:if test="${not empty usernameMessage}">
+                        <div class="invalid-feedback d-block">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <small>${usernameMessage}</small>
+                        </div>
+                    </c:if>
                 </div>
 
+                <!-- Password Field -->
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
+                    <label for="password" class="form-label">Κωδικός</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        <input type="password" class="form-control ${not empty passwordMessage ? 'is-invalid' : ''}"
+                               id="password" name="password" required>
+                        <button class="btn btn-outline-secondary toggle-password" type="button">
+                            <i class="bi bi-eye-fill"></i>
+                        </button>
                     </div>
+                    <c:if test="${not empty passwordMessage}">
+                        <div class="invalid-feedback d-block">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <small>${passwordMessage}</small>
+                        </div>
+                    </c:if>
 
                     <!-- Forgot Password Link -->
                     <div class="text-end mt-2 auth-links">
-                        <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">Forgot password?</a>
+                        <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
+                        Ξεχάσατε τον κωδικό σας? </a>
                     </div>
                 </div>
 
                 <!-- Login Button -->
                 <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-primary btn-lg">Log In</button>
+                    <button type="submit" class="btn btn-primary btn-lg">Σύνδεση</button>
                 </div>
 
                 <!-- Register Link -->
                 <div class="text-center auth-links">
-                    <span class="text-muted">Are you not registered yet?</span>
-                    <a href="${pageContext.request.contextPath}/register" class="text-decoration-none ms-1">Register here</a>
+                    <span class="text-muted">Δεν έχετε λογαριασμό ακόμα? </span>
+                    <a href="${pageContext.request.contextPath}/register" class="text-decoration-none ms-1">Εγγραφή εδώ</a>
                 </div>
             </form>
         </div>
@@ -174,31 +209,72 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Handle form submission for password reset
-        document.getElementById('resetForm').addEventListener('submit', function(e) {
-            e.preventDefault();
 
-            // In a real application, you would make an AJAX call to your server here
-            // For demonstration, we'll just show the reset link container
-            document.getElementById('resetLinkContainer').classList.remove('d-none');
-            document.getElementById('resetLink').value =
-                window.location.origin + '${pageContext.request.contextPath}/reset-password?token=demo-token';
+document.addEventListener('DOMContentLoaded', function() {
+
+    // Clear error messages when user starts typing
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+
+    if (usernameInput) {
+        usernameInput.addEventListener('input', function() {
+            const errorMessage = document.querySelector('.error-message');
+            if (errorMessage) errorMessage.style.display = 'none';
+
+            document.querySelectorAll('.invalid-feedback').forEach(el => {
+                el.style.display = 'none';
+            });
+            this.classList.remove('is-invalid');
         });
+    }
 
-        function copyResetLink() {
-            const resetLink = document.getElementById('resetLink');
-            resetLink.select();
-            document.execCommand('copy');
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const errorMessage = document.querySelector('.error-message');
+            if (errorMessage) errorMessage.style.display = 'none';
 
-            // Show feedback
-            const button = event.target.closest('button');
+            document.querySelectorAll('.invalid-feedback').forEach(el => {
+                el.style.display = 'none';
+            });
+            this.classList.remove('is-invalid');
+        });
+    }
+
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const input = this.closest('.input-group').querySelector('input');
+            if (input) {
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('bi-eye-fill');
+                    icon.classList.toggle('bi-eye-slash-fill');
+                }
+            }
+        });
+    });
+});
+
+// Forgot password modal script (keep this if you need it)
+function copyResetLink() {
+    const resetLink = document.getElementById('resetLink');
+    if (resetLink) {
+        resetLink.select();
+        document.execCommand('copy');
+
+        const button = event.target.closest('button');
+        if (button) {
             const originalHTML = button.innerHTML;
             button.innerHTML = '<i class="bi bi-check"></i> Copied!';
-
             setTimeout(function() {
                 button.innerHTML = originalHTML;
             }, 2000);
         }
+    }
+}
     </script>
 </body>
 </html>

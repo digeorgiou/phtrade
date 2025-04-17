@@ -45,6 +45,7 @@ public class RegistrationController extends BaseServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
+        boolean terms = "on".equals(request.getParameter("terms"));
 
 
         String errorMessage = "";
@@ -54,6 +55,7 @@ public class RegistrationController extends BaseServlet {
         String passwordMessage;
         String confirmPasswordMessage;
         String emailMessage;
+        String termsMessage;
 
         try {
             // Create DTO
@@ -62,6 +64,7 @@ public class RegistrationController extends BaseServlet {
             userDTO.setEmail(email);
             userDTO.setPassword(password);
             userDTO.setConfirmedPassword(confirmPassword);
+            userDTO.setTermsAccepted(terms);
             userDTO.setRole("PHARMACY_USER"); // Default role
 
             UserValidator<UserInsertDTO> validator =
@@ -75,8 +78,18 @@ public class RegistrationController extends BaseServlet {
                 passwordMessage = errors.getOrDefault("password","");
                 confirmPasswordMessage = errors.getOrDefault("confirmPassword", "");
                 emailMessage = errors.getOrDefault("email", "");
+                termsMessage = errors.getOrDefault("terms", "");
+
+
+                request.setAttribute("termsMessage",termsMessage);
+                request.setAttribute("usernameMessage", usernameMessage);
+                request.setAttribute("passwordMessage", passwordMessage);
+                request.setAttribute("confirmPasswordMessage", confirmPasswordMessage);
+                request.setAttribute("emailMessage", emailMessage);
+
                 request.setAttribute("userRegisterDTO", userDTO);
-                request.getRequestDispatcher("/WEB-INF/jsp/register.jsp");
+
+                request.getRequestDispatcher("/WEB-INF/jsp/register.jsp").forward(request,response);
                 return;
             }
 
