@@ -3,7 +3,9 @@ package gr.aueb.cf.pharmapp.validator;
 import gr.aueb.cf.pharmapp.dao.IUserDAO;
 import gr.aueb.cf.pharmapp.dao.UserDAOImpl;
 import gr.aueb.cf.pharmapp.dto.BaseUserDTO;
+import gr.aueb.cf.pharmapp.dto.UserLoginDTO;
 import gr.aueb.cf.pharmapp.exceptions.UserDAOException;
+import gr.aueb.cf.pharmapp.exceptions.UserNotFoundException;
 import gr.aueb.cf.pharmapp.service.IUserService;
 import gr.aueb.cf.pharmapp.service.UserServiceImpl;
 import jakarta.persistence.EntityManagerFactory;
@@ -62,6 +64,25 @@ public class UserValidator<T> {
 
             if(userService.emailExists(dto.getEmail())){
                 errors.put("email", "Το email χρησιμοποιείται");
+            }
+            return errors;
+        }
+
+        public Map<String, String> validate (UserLoginDTO dto ) throws UserDAOException , UserNotFoundException {
+
+            Map<String, String> errors = new HashMap<>();
+
+
+            if(!userService.usernameExists(dto.getUsername())){
+                errors.put("username", "Το όνομα χρήστη δεν υπάρχει");
+            } else {
+                try {
+                    if (!userService.authenticate(dto)) {
+                        errors.put("password", "Λάθος Κωδικός");
+                    }
+                } catch (Exception e) {
+                    errors.put("error", "Σφάλμα κατά την αυθεντικοποίηση");
+                }
             }
             return errors;
         }

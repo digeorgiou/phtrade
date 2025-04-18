@@ -13,6 +13,7 @@ import gr.aueb.cf.pharmapp.exceptions.*;
 import gr.aueb.cf.pharmapp.mapper.Mapper;
 import gr.aueb.cf.pharmapp.model.Pharmacy;
 import gr.aueb.cf.pharmapp.model.User;
+import gr.aueb.cf.pharmapp.security.SecurityUtil;
 import jakarta.persistence.EntityManagerFactory;
 
 import java.util.List;
@@ -30,18 +31,23 @@ public class UserServiceImpl implements IUserService{
     }
 
     @Override
-    public UserReadOnlyDTO insertUser(UserInsertDTO dto) throws UserDAOException, UserAlreadyExistsException{
-        User user;
-        try{
-            if(userDAO.usernameExists(dto.getUsername())){
+    public UserReadOnlyDTO insertUser(UserInsertDTO dto)
+            throws UserDAOException, UserAlreadyExistsException {
+
+        try {
+            if(userDAO.usernameExists(dto.getUsername())) {
                 throw new UserAlreadyExistsException("Username already exists");
             }
 
-            user = Mapper.mapToUser(dto);
-            user =  userDAO.save(user);
+            // Hash password before creating User entity
+            String hashedPassword = SecurityUtil.hashPassword(dto.getPassword());
+            User user = Mapper.mapToUser(dto);
+            user.setPassword(hashedPassword);  // Set hashed password
+
+            user = userDAO.save(user);
             return Mapper.mapToReadOnlyDTO(user).orElse(null);
         } catch (UserDAOException e) {
-            throw new UserDAOException("error inserting user");
+            throw new UserDAOException("Error inserting user"); // Include original exception
         }
     }
 
@@ -121,12 +127,15 @@ public class UserServiceImpl implements IUserService{
 
     @Override
     public boolean authenticate(UserLoginDTO userLoginDTO) throws UserDAOException, UserNotFoundException {
-        try{
-            return userDAO.isUserValid(userLoginDTO.getUsername(),
-                    userLoginDTO.getPassword());
-        } catch (UserDAOException e) {
-            throw e;
+
+        //Input Validation
+        if(userLoginDTO == null || userLoginDTO.getUsername() == null || userLoginDTO.getPassword() == null){
+            return false;
         }
+        return userDAO.isUserValid(
+                userLoginDTO.getUsername(),
+                userLoginDTO.getPassword()
+        );
     }
 
     public boolean usernameExists(String username) throws UserDAOException {

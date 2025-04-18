@@ -4,6 +4,7 @@ package gr.aueb.cf.pharmapp.dao;
 import gr.aueb.cf.pharmapp.core.RoleType;
 import gr.aueb.cf.pharmapp.exceptions.TradeRecordDAOException;
 import gr.aueb.cf.pharmapp.exceptions.UserDAOException;
+import gr.aueb.cf.pharmapp.exceptions.UserNotFoundException;
 import gr.aueb.cf.pharmapp.model.Pharmacy;
 import gr.aueb.cf.pharmapp.model.TradeRecord;
 import gr.aueb.cf.pharmapp.model.User;
@@ -11,6 +12,7 @@ import gr.aueb.cf.pharmapp.security.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
@@ -27,23 +29,19 @@ public class UserDAOImpl implements IUserDAO{
 
     @Override
     public User save(User user) throws UserDAOException {
-
-        String hashedPassword = SecurityUtil.hashPassword(user.getPassword());
-        user.setPassword(hashedPassword);
-
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = null;
-        try{
+        try {
             tx = em.getTransaction();
             tx.begin();
             em.persist(user);
             tx.commit();
             return user;
-        } catch (Exception e){
-            if(tx != null && tx.isActive()){
+        } catch (Exception e) {
+            if(tx != null && tx.isActive()) {
                 tx.rollback();
             }
-            throw new UserDAOException("Error in saving user " + e.getMessage());
+            throw new UserDAOException("Error saving user");
         } finally {
             if (em != null && em.isOpen()) {
                 em.close();
@@ -178,30 +176,75 @@ public class UserDAOImpl implements IUserDAO{
         }
     }
 
-    @Override
-    public boolean isUserValid(String username, String password) throws UserDAOException {
+    public boolean isUserValid(String username, String password)
+            throws UserDAOException, UserNotFoundException {
+
         EntityManager em = emf.createEntityManager();
         try {
+            System.out.println("Attempting to validate user: " + username);
+
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<User> query = cb.createQuery(User.class);
             Root<User> root = query.from(User.class);
 
             query.select(root)
-                    .where(cb.equal(root.get("username"),username));
+                    .where(cb.equal(root.get("username"), username));
 
-            User user = em.createQuery(query).getSingleResult();
+            try {
+                User user = em.createQuery(query).getSingleResult();
+                System.out.println("Found user: " + user.getUsername());
 
-            return user != null && SecurityUtil.isPasswordValid(password,
-                    user.getPassword());
+                // Debug password comparison
+                System.out.println("Input password: " + password);
+                System.out.println("Stored hash: " + user.getPassword());
+                System.out.println("Comparison result: " +
+                        SecurityUtil.isPasswordValid(password, user.getPassword()));
+
+                return SecurityUtil.isPasswordValid(password, user.getPassword());
+
+            } catch (NoResultException e) {
+                System.out.println("User not found: " + username);
+                throw new UserNotFoundException("User not found with username " + username);
+            }
 
         } catch (Exception e) {
-            throw new UserDAOException("Error validating user credentials " + e);
+            System.out.println("Validation error: " + e.getMessage());
+            throw new UserDAOException("Error validating user credentials");
         } finally {
             if (em != null && em.isOpen()) {
                 em.close();
             }
         }
     }
+
+//    @Override
+//    public boolean isUserValid(String username, String password) throws UserDAOException, UserNotFoundException {
+//        EntityManager em = emf.createEntityManager();
+//        try {
+//            CriteriaBuilder cb = em.getCriteriaBuilder();
+//            CriteriaQuery<User> query = cb.createQuery(User.class);
+//            Root<User> root = query.from(User.class);
+//
+//            query.select(root)
+//                    .where(cb.equal(root.get("username"),username));
+//
+//            try {
+//                User user = em.createQuery(query).getSingleResult();
+//
+//                return SecurityUtil.isPasswordValid(password, user.getPassword());
+//            } catch (Exception e) {
+//                throw new UserNotFoundException("User not found with username" +
+//                        " " + username);
+//            }
+//
+//        } catch (Exception e) {
+//            throw new UserDAOException("Error validating user credentials " + e);
+//        } finally {
+//            if (em != null && em.isOpen()) {
+//                em.close();
+//            }
+//        }
+//    }
 
     @Override
     public boolean isAdmin(Long userId) throws UserDAOException {

@@ -15,59 +15,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- Custom CSS -->
-    <style>
-        body {
-            background-color: #f8f9fa;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .navbar {
-            background-color: #b9dae1 !important;
-        }
-
-        .login-container {
-            max-width: 500px;
-            margin: auto;
-            padding: 2rem;
-            background-color: #b9dae1;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            margin-top: 3rem;
-            margin-bottom: 3rem;
-        }
-
-        .login-logo {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .login-logo img {
-            height: 80px;
-        }
-
-        .form-control {
-            background-color: rgba(255, 255, 255, 0.8);
-        }
-
-        footer {
-            background-color: #343a40;
-            color: white;
-            padding: 1.5rem 0;
-            margin-top: auto;
-        }
-
-        .auth-links {
-            font-size: 0.9rem;
-        }
-
-        .error-message {
-            color: #dc3545;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css">
 </head>
 <body>
     <!-- Navigation -->
@@ -113,12 +61,13 @@
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
                         <input type="text" class="form-control ${not empty usernameMessage ? 'is-invalid' : ''}"
-                               id="username" name="username" required value="${param.username}">
+                               id="username" name="username" required
+                               value="${not empty requestScope.username ? requestScope.username : ''}">
                     </div>
                     <c:if test="${not empty usernameMessage}">
-                        <div class="invalid-feedback d-block">
+                        <div id = "username-error" class="invalid-feedback d-block">
                             <i class="bi bi-exclamation-circle-fill"></i>
-                            <small>${usernameMessage}</small>
+                            <small>${requestScope.usernameMessage}</small>
                         </div>
                     </c:if>
                 </div>
@@ -137,7 +86,7 @@
                     <c:if test="${not empty passwordMessage}">
                         <div class="invalid-feedback d-block">
                             <i class="bi bi-exclamation-circle-fill"></i>
-                            <small>${passwordMessage}</small>
+                            <small>${requestScope.passwordMessage}</small>
                         </div>
                     </c:if>
 
@@ -165,7 +114,7 @@
     <!-- Footer -->
     <footer>
         <div class="container text-center">
-            <p class="mb-0">© 2023 PharmaTrade. All rights reserved.</p>
+            <p class="mb-0">© 2025 Coding Factory. All rights reserved.</p>
         </div>
     </footer>
 
@@ -205,76 +154,9 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS Bundle with Popper -->
+    <!-- Bootstrap JS  -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-
-document.addEventListener('DOMContentLoaded', function() {
-
-    // Clear error messages when user starts typing
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
-
-    if (usernameInput) {
-        usernameInput.addEventListener('input', function() {
-            const errorMessage = document.querySelector('.error-message');
-            if (errorMessage) errorMessage.style.display = 'none';
-
-            document.querySelectorAll('.invalid-feedback').forEach(el => {
-                el.style.display = 'none';
-            });
-            this.classList.remove('is-invalid');
-        });
-    }
-
-    if (passwordInput) {
-        passwordInput.addEventListener('input', function() {
-            const errorMessage = document.querySelector('.error-message');
-            if (errorMessage) errorMessage.style.display = 'none';
-
-            document.querySelectorAll('.invalid-feedback').forEach(el => {
-                el.style.display = 'none';
-            });
-            this.classList.remove('is-invalid');
-        });
-    }
-
-    // Toggle password visibility
-    document.querySelectorAll('.toggle-password').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const input = this.closest('.input-group').querySelector('input');
-            if (input) {
-                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-                input.setAttribute('type', type);
-                const icon = this.querySelector('i');
-                if (icon) {
-                    icon.classList.toggle('bi-eye-fill');
-                    icon.classList.toggle('bi-eye-slash-fill');
-                }
-            }
-        });
-    });
-});
-
-// Forgot password modal script (keep this if you need it)
-function copyResetLink() {
-    const resetLink = document.getElementById('resetLink');
-    if (resetLink) {
-        resetLink.select();
-        document.execCommand('copy');
-
-        const button = event.target.closest('button');
-        if (button) {
-            const originalHTML = button.innerHTML;
-            button.innerHTML = '<i class="bi bi-check"></i> Copied!';
-            setTimeout(function() {
-                button.innerHTML = originalHTML;
-            }, 2000);
-        }
-    }
-}
-    </script>
+    <!-- Custom JS -->
+    <script src="${pageContext.request.contextPath}/js/login.js"></script>
 </body>
 </html>

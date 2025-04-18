@@ -13,6 +13,9 @@ public class SecurityUtil {
     }
 
     public static boolean isPasswordValid(String inputPasswd, String storedHashedPasswd) {
+        System.out.println("Verifying password:");
+        System.out.println("Input: '" + inputPasswd + "'");
+        System.out.println("Stored: " + storedHashedPasswd);
         return BCrypt.checkpw(inputPasswd, storedHashedPasswd);
     }
 }

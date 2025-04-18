@@ -3,9 +3,11 @@ package gr.aueb.cf.pharmapp.controller;
 import gr.aueb.cf.pharmapp.dto.UserLoginDTO;
 import gr.aueb.cf.pharmapp.exceptions.UserDAOException;
 import gr.aueb.cf.pharmapp.exceptions.UserNotFoundException;
+import gr.aueb.cf.pharmapp.model.User;
 import gr.aueb.cf.pharmapp.service.IPharmacyService;
 import gr.aueb.cf.pharmapp.service.IUserService;
 import gr.aueb.cf.pharmapp.service.UserServiceImpl;
+import gr.aueb.cf.pharmapp.validator.UserValidator;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -16,6 +18,7 @@ import org.jboss.weld.context.http.Http;
 
 import java.io.IOException;
 import java.net.Authenticator;
+import java.util.Map;
 
 @WebServlet("/login")
 public class LoginController extends BaseServlet {
@@ -43,12 +46,7 @@ public class LoginController extends BaseServlet {
 
         int ADMIN_TIMEOUT = 30 * 60; // 30 mins
 
-        // Set headers to prevent caching
-        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        response.setHeader("Pragma", "no-cache");
-        response.setHeader("Expires", "0");
-
-        // Clear any previous error messages
+        // Clear previous attributes
         request.removeAttribute("error");
         request.removeAttribute("usernameMessage");
         request.removeAttribute("passwordMessage");
@@ -57,29 +55,21 @@ public class LoginController extends BaseServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
-
+        request.setAttribute("username", username);
 
         try {
-            // First check if username exists
-            boolean usernameExists = userService.usernameExists(username);
-
-            if (!usernameExists) {
-                String usernameMessage = "Δεν υπάρχει χρήστης με το " +
-                        "συγκεκριμένο username";
-                request.setAttribute("usernameMessage", usernameMessage);
-                request.setAttribute("username", username); // Keep the entered username
-                request.getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(request, response);
-                return;
-            }
-
-            // Then attempt authentication
+            //Create DTO
             UserLoginDTO userLoginDTO = new UserLoginDTO(username, password);
-            boolean isAuthenticated = userService.authenticate(userLoginDTO);
+            UserValidator validator = new UserValidator(getEntityManagerFactory());
+            Map <String, String> errors = validator.validate(userLoginDTO);
 
-            if (!isAuthenticated) {
-                String passwordMessage = "Λάθος κωδικός πρόσβασης";
+            if(! errors.isEmpty()) {
+                String usernameMessage = errors.getOrDefault("username", "");
+                String passwordMessage = errors.getOrDefault("password", "");
+
+                request.setAttribute("usernameMessage", usernameMessage);
                 request.setAttribute("passwordMessage", passwordMessage);
-                request.setAttribute("username", username); // Keep the entered username
+
                 request.getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(request, response);
                 return;
             }
@@ -93,23 +83,18 @@ public class LoginController extends BaseServlet {
             HttpSession session = request.getSession(true);
             session.setAttribute("authenticated", true);
             session.setAttribute("username", username);
+
             session.setAttribute("role", userService.getUserByUsername(username).getRole());
 
             if (session.getAttribute("role").equals("ADMIN")) {
                 session.setMaxInactiveInterval(ADMIN_TIMEOUT);
             }
 
-            // Clear any error messages before redirecting
-            request.removeAttribute("error");
-            request.removeAttribute("usernameMessage");
-            request.removeAttribute("passwordMessage");
-
             response.sendRedirect(request.getContextPath() + "/pharmapp/dashboard");
 
         } catch (UserDAOException | UserNotFoundException e) {
             String errorMessage = "Σφάλμα κατά την αυθεντικοποίηση";
             request.setAttribute("error", errorMessage);
-            request.setAttribute("username", username); // Keep the entered username
             request.getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(request, response);
         }
     }

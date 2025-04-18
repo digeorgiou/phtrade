@@ -93,29 +93,27 @@
     <!-- Success Content -->
     <div class="container">
         <div class="success-container">
-            <div class="success-logo">
-                <img src="${pageContext.request.contextPath}/img/pharmalogo.png" alt="PharmaTrade Logo">
-            </div>
 
-            <div class="success-icon">
+        <div class="success-icon">
                 <i class="bi bi-check-circle-fill"></i>
             </div>
 
-            <h2 class="text-center mb-3">Registration Successful!</h2>
-            <p class="text-center mb-4">Welcome to PharmaTrade. Your account has been created successfully.</p>
+            <h2 class="text-center mb-3">Επιτυχής Εγγραφή!</h2>
+            <p class="text-center mb-4">Καλώς ήρθατε στην εφαρμογή
+            ανταλλαγών. Ο λογαριασμός σας δημιουργήθηκε με επιτυχία</p>
 
             <div class="user-details">
                 <div class="detail-row">
-                    <span class="detail-label">Username:</span>
-                    <span>${registeredUser.username}</span>
+                    <span class="detail-label">Όνομα χρήστη:</span>
+                    <span>${sessionScope.userInfo.username}</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Email:</span>
-                    <span>${registeredUser.email}</span>
+                    <span>${sessionScope.userInfo.email}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Account Type:</span>
-                    <span>${registeredUser.role}</span>
+                    <span class="detail-label">Ρόλος:</span>
+                    <span>${sessionScope.userInfo.role}</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Status:</span>
@@ -125,16 +123,17 @@
 
             <div class="d-grid gap-2">
                 <a href="${pageContext.request.contextPath}/dashboard" class="btn btn-primary btn-lg">
-                    Go to Dashboard
+                    Είσοδος στην εφαρμογή
                 </a>
                 <a href="${pageContext.request.contextPath}/profile" class="btn btn-outline-secondary">
-                    Edit Profile
+                    Επεξεργασία προφίλ
                 </a>
             </div>
 
             <div class="text-center mt-4 auth-links">
-                <span class="text-muted">Need help?</span>
-                <a href="${pageContext.request.contextPath}/support" class="text-decoration-none ms-1">Contact Support</a>
+                <span class="text-muted">Χρειάζεστε βοήθεια?</span>
+                <a href="${pageContext.request.contextPath}/support"
+                class="text-decoration-none ms-1">Υποστήριξη</a>
             </div>
         </div>
     </div>
@@ -142,7 +141,7 @@
     <!-- Footer -->
     <footer>
         <div class="container text-center">
-            <p class="mb-0">© 2023 PharmaTrade. All rights reserved.</p>
+            <p class="mb-0">© 2025 Coding Factory. All rights reserved.</p>
         </div>
     </footer>
 

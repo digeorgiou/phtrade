@@ -1,6 +1,7 @@
 package gr.aueb.cf.pharmapp.dao;
 
 import gr.aueb.cf.pharmapp.exceptions.UserDAOException;
+import gr.aueb.cf.pharmapp.exceptions.UserNotFoundException;
 import gr.aueb.cf.pharmapp.model.Pharmacy;
 import gr.aueb.cf.pharmapp.model.User;
 
@@ -14,7 +15,7 @@ public interface IUserDAO {
      List<User> getAll() throws UserDAOException;
     public User getById(Long id) throws UserDAOException;
     User getByUsername(String username) throws UserDAOException;
-    boolean isUserValid(String username, String password) throws UserDAOException;
+    boolean isUserValid(String username, String password) throws UserDAOException, UserNotFoundException;
     public boolean isAdmin(Long userId) throws UserDAOException;
     public User findByPharmacy(Pharmacy pharmacy) throws UserDAOException;
     public boolean usernameExists(String username) throws UserDAOException;

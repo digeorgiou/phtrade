@@ -45,7 +45,7 @@ public class Mapper {
         User user = new User();
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
-        user.setPassword(SecurityUtil.hashPassword(dto.getPassword()));
+        user.setPassword(dto.getPassword());
         user.setRoleType(RoleType.valueOf(dto.getRole()));
         return user;
 
