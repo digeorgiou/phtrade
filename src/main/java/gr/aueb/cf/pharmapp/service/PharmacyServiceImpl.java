@@ -189,4 +189,14 @@ public class PharmacyServiceImpl implements IPharmacyService{
             throw e;
         }
     }
+
+    @Override
+    public List<PharmacyReadOnlyDTO> searchPharmaciesByName(String name) throws PharmacyDAOException {
+        return List.of();
+    }
+
+    @Override
+    public boolean canAddAsContact(Long userId, Long pharmacyId) throws PharmacyNotFoundException, PharmacyDAOException, UserDAOException {
+        return false;
+    }
 }

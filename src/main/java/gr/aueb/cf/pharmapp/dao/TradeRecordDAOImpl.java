@@ -139,4 +139,36 @@ public class TradeRecordDAOImpl implements ITradeRecordDAO {
         }
     }
 
+    @Override
+    public List<TradeRecord> findRecentTradesByPharmacy(Long pharmacyId, int limit) throws TradeRecordDAOException {
+        EntityManager em = emf.createEntityManager();
+
+        try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<TradeRecord> query =
+                    cb.createQuery(TradeRecord.class);
+            Root<TradeRecord> tr = query.from(TradeRecord.class);
+
+
+            Predicate giverPredicate = cb.equal(tr.get("giver").get("id"), pharmacyId);
+            Predicate receiverPredicate = cb.equal(tr.get("receiver").get("id"), pharmacyId);
+            query.where(cb.or(giverPredicate, receiverPredicate));
+
+            // Order by transaction date descending
+            query.orderBy(cb.desc(tr.get("transactionDate")));
+
+            // Execute query with limit
+            return em.createQuery(query)
+                    .setMaxResults(limit)
+                    .getResultList();
+        } catch (Exception e) {
+            throw new TradeRecordDAOException("error in retrieving recent " +
+                    "trades");
+        } finally {
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
+        }
+
+    }
 }

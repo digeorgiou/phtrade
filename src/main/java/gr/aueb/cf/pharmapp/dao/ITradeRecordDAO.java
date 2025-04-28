@@ -14,5 +14,8 @@ public interface ITradeRecordDAO {
     public void delete(Long id) throws TradeRecordDAOException;
     public TradeRecord getById(Long id) throws TradeRecordDAOException;
     public List<TradeRecord> getAll() throws TradeRecordDAOException;
+    public List<TradeRecord> findRecentTradesByPharmacy(Long pharmacyId,
+                                                        int limit) throws TradeRecordDAOException;
+
 
 }

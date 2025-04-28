@@ -20,7 +20,10 @@ public interface IPharmacyService {
             PharmacyDAOException, UserNotFoundException, UserDAOException;
     boolean nameExists(String name) throws PharmacyDAOException;
     PharmacyReadOnlyDTO getPharmacyById(Long id) throws PharmacyNotFoundException, PharmacyDAOException;
+    List<PharmacyReadOnlyDTO> searchPharmaciesByName(String name) throws PharmacyDAOException;
     List<PharmacyReadOnlyDTO> getAllPharmacies() throws PharmacyDAOException;
     List<PharmacyReadOnlyDTO> getPharmaciesByName(String name) throws PharmacyDAOException;
+    boolean canAddAsContact(Long userId, Long pharmacyId)
+            throws PharmacyNotFoundException, PharmacyDAOException, UserDAOException;
 
 }

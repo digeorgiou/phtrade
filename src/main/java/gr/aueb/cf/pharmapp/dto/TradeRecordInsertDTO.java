@@ -7,6 +7,7 @@ public class TradeRecordInsertDTO extends BaseTradeRecordDTO{
     private Long giverPharmacyId;
     private Long receiverPharmacyId;
     private Long recorderUserId;
+    private LocalDateTime transactionDate;
 
     public TradeRecordInsertDTO() {
     }
@@ -19,6 +20,7 @@ public class TradeRecordInsertDTO extends BaseTradeRecordDTO{
         this.giverPharmacyId = giverPharmacyId;
         this.receiverPharmacyId = receiverPharmacyId;
         this.recorderUserId = recorderUserId;
+        this.transactionDate = transactionDate;
 
     }
 
@@ -36,6 +38,14 @@ public class TradeRecordInsertDTO extends BaseTradeRecordDTO{
 
     public void setReceiverPharmacyId(Long receiverPharmacyId) {
         this.receiverPharmacyId = receiverPharmacyId;
+    }
+
+    public LocalDateTime getTransactionDate() {
+        return transactionDate;
+    }
+
+    public void setTransactionDate(LocalDateTime transactionDate) {
+        this.transactionDate = transactionDate;
     }
 
     public Long getRecorderUserId() {

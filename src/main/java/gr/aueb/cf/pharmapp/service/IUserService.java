@@ -5,6 +5,7 @@ import gr.aueb.cf.pharmapp.dto.UserLoginDTO;
 import gr.aueb.cf.pharmapp.dto.UserReadOnlyDTO;
 import gr.aueb.cf.pharmapp.dto.UserUpdateDTO;
 import gr.aueb.cf.pharmapp.exceptions.*;
+import gr.aueb.cf.pharmapp.model.PharmacyContact;
 import gr.aueb.cf.pharmapp.model.User;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public interface IUserService {
     List<UserReadOnlyDTO> getAllUsers() throws UserDAOException;
     UserReadOnlyDTO getUserByUsername(String username) throws UserNotFoundException,
             UserDAOException;
+    List<PharmacyContact> getUserContactsWithPharmacies(Long userId) throws UserDAOException;
     boolean authenticate(UserLoginDTO userLoginDTO)  throws UserNotFoundException, UserDAOException;
     boolean usernameExists(String username) throws UserDAOException;
     boolean emailExists(String email) throws UserDAOException;

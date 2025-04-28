@@ -12,6 +12,7 @@ import gr.aueb.cf.pharmapp.dto.UserUpdateDTO;
 import gr.aueb.cf.pharmapp.exceptions.*;
 import gr.aueb.cf.pharmapp.mapper.Mapper;
 import gr.aueb.cf.pharmapp.model.Pharmacy;
+import gr.aueb.cf.pharmapp.model.PharmacyContact;
 import gr.aueb.cf.pharmapp.model.User;
 import gr.aueb.cf.pharmapp.security.SecurityUtil;
 import jakarta.persistence.EntityManagerFactory;
@@ -238,4 +239,8 @@ public class UserServiceImpl implements IUserService{
         }
     }
 
+    @Override
+    public List<PharmacyContact> getUserContactsWithPharmacies(Long userId) throws UserDAOException {
+        return List.of();
+    }
 }

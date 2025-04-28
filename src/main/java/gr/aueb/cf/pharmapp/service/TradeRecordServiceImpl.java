@@ -2,12 +2,11 @@ package gr.aueb.cf.pharmapp.service;
 
 import gr.aueb.cf.pharmapp.core.RoleType;
 import gr.aueb.cf.pharmapp.dao.*;
-import gr.aueb.cf.pharmapp.dto.TradeRecordInsertDTO;
-import gr.aueb.cf.pharmapp.dto.TradeRecordReadOnlyDTO;
-import gr.aueb.cf.pharmapp.dto.TradeRecordUpdateDTO;
+import gr.aueb.cf.pharmapp.dto.*;
 import gr.aueb.cf.pharmapp.exceptions.*;
 import gr.aueb.cf.pharmapp.mapper.Mapper;
 import gr.aueb.cf.pharmapp.model.Pharmacy;
+import gr.aueb.cf.pharmapp.model.PharmacyContact;
 import gr.aueb.cf.pharmapp.model.TradeRecord;
 import gr.aueb.cf.pharmapp.model.User;
 import jakarta.persistence.EntityManager;
@@ -20,6 +19,8 @@ import jakarta.persistence.criteria.Root;
 
 import javax.xml.transform.TransformerException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -412,5 +413,115 @@ public class TradeRecordServiceImpl implements ITradeRecordService{
 
         Double result = em.createQuery(sumQuery).getSingleResult();
         return result != null ? result : 0;
+    }
+
+    @Override
+    public List<PharmacyBalanceDTO> getPharmacyBalancesWithContacts(Long pharmacyId) throws PharmacyNotFoundException,
+            PharmacyDAOException, TradeRecordDAOException {
+
+        Pharmacy pharmacy = pharmacyDAO.getById(pharmacyId);
+        // Verify pharmacy exists
+       if(pharmacy == null) {
+           throw new PharmacyNotFoundException("Pharmacy not found with id: " + pharmacyId);
+       }
+
+        // Get all contacts for this pharmacy's owner
+       List<PharmacyContact> contacts =
+               pharmacy.getUser().getContacts().stream().toList();
+       List<PharmacyBalanceDTO> balances = new ArrayList<>();
+
+       for(PharmacyContact contact : contacts){
+           double balance = calculateBalanceBetweenPharmacies(pharmacyId,
+                   contact.getPharmacy().getId());
+
+           balances.add(new PharmacyBalanceDTO(
+                   contact.getContactName(),
+                   contact.getPharmacy().getName(),
+                   contact.getPharmacy().getId(),
+                   balance
+           ));
+       }
+
+       balances.sort(Comparator.comparing(PharmacyBalanceDTO::getContactName));
+
+       return balances;
+    }
+
+    @Override
+    public List<RecentTradeDTO> getRecentTradesForDashboard(Long pharmacyId, int limit)
+            throws PharmacyNotFoundException, PharmacyDAOException, TradeRecordDAOException {
+
+        Pharmacy pharmacy = pharmacyDAO.getById(pharmacyId);
+        // Verify pharmacy exists
+        if(pharmacy == null) {
+            throw new PharmacyNotFoundException("Pharmacy not found with id: " + pharmacyId);
+        }
+
+        List<TradeRecord> recentTrades = tradeRecordDAO.findRecentTradesByPharmacy(pharmacyId, limit);
+
+        return recentTrades.stream()
+                .map(trade -> {
+                    boolean isOutgoing = trade.getGiver().getId().equals(pharmacyId);
+
+                    return new RecentTradeDTO(
+                            trade.getTransactionDate(),
+                            trade.getDescription(),
+                            trade.getAmount(),
+                            isOutgoing ? trade.getReceiver().getName() : trade.getGiver().getName(),
+                            isOutgoing
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public TradeRecordReadOnlyDTO recordTrade(TradeRecordInsertDTO dto, Long recorderUserId)
+            throws TradeRecordDAOException, PharmacyNotFoundException,
+            UserAnauthorizedException, UserDAOException,UserNotFoundException
+            , PharmacyDAOException {
+
+        // Validate input
+        if (dto.getAmount() <= 0) {
+            throw new IllegalArgumentException("Trade amount must be positive");
+        }
+
+        // Get recorder user
+        User recorder = userDAO.getById(recorderUserId);
+        if(recorder == null) {
+            throw new UserNotFoundException("User not found with id: " + recorderUserId);
+        }
+
+        // Get giver and receiver pharmacies
+        Pharmacy giver = pharmacyDAO.getById(dto.getGiverPharmacyId());
+        if(giver == null) {throw  new PharmacyNotFoundException(
+            "Giver pharmacy not found");
+        }
+
+        Pharmacy receiver = pharmacyDAO.getById(dto.getReceiverPharmacyId());
+        if(receiver == null) {throw  new PharmacyNotFoundException(
+                "Receiver pharmacy not found");
+        }
+        // Verify recorder has permission for giver pharmacy
+        if (!giver.getUser().getId().equals(recorderUserId) && !receiver.getUser().getId().equals(recorderUserId) && !userDAO.isAdmin(recorderUserId)) {
+            throw new UserAnauthorizedException("User not authorized to record trades for this pharmacy");
+        }
+
+        // Create and save trade record
+        TradeRecord tradeRecord = new TradeRecord();
+        tradeRecord.setDescription(dto.getDescription());
+        tradeRecord.setAmount(dto.getAmount());
+        tradeRecord.setGiver(giver);
+        tradeRecord.setReceiver(receiver);
+        tradeRecord.setRecorder(recorder);
+        tradeRecord.setTransactionDate(dto.getTransactionDate() != null ?
+                dto.getTransactionDate() : LocalDateTime.now());
+        TradeRecord savedRecord = tradeRecordDAO.save(tradeRecord);
+
+
+        pharmacyDAO.save(giver);
+        pharmacyDAO.save(receiver);
+
+        return Mapper.mapTradeRecordToReadOnlyDTO(savedRecord).orElseThrow(
+                () -> new TradeRecordDAOException("Error mapping trade record to DTO"));
     }
 }

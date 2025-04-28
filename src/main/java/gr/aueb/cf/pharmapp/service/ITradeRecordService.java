@@ -1,9 +1,8 @@
 package gr.aueb.cf.pharmapp.service;
 
-import gr.aueb.cf.pharmapp.dto.TradeRecordInsertDTO;
-import gr.aueb.cf.pharmapp.dto.TradeRecordReadOnlyDTO;
-import gr.aueb.cf.pharmapp.dto.TradeRecordUpdateDTO;
+import gr.aueb.cf.pharmapp.dto.*;
 import gr.aueb.cf.pharmapp.exceptions.*;
+import gr.aueb.cf.pharmapp.model.TradeRecord;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,6 +28,15 @@ public interface ITradeRecordService {
             TradeRecordDAOException;
     Double calculateBalanceBetweenPharmacies(Long pharmacy1Id, Long pharmacy2Id)
             throws PharmacyNotFoundException, PharmacyDAOException, TradeRecordDAOException;
+    List<PharmacyBalanceDTO> getPharmacyBalancesWithContacts(Long pharmacyId)
+            throws PharmacyNotFoundException, PharmacyDAOException, TradeRecordDAOException;
+    List<RecentTradeDTO> getRecentTradesForDashboard(Long pharmacyId, int limit)
+            throws PharmacyNotFoundException, PharmacyDAOException, TradeRecordDAOException;
+    TradeRecordReadOnlyDTO recordTrade(TradeRecordInsertDTO dto, Long recorderUserId)
+            throws TradeRecordDAOException, PharmacyNotFoundException,
+            UserAnauthorizedException, UserDAOException,UserNotFoundException
+            , PharmacyDAOException;
+
 
 
 
