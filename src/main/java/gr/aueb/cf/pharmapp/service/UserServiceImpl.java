@@ -127,6 +127,19 @@ public class UserServiceImpl implements IUserService{
     }
 
     @Override
+    public User getUserEntityByUsername(String username) throws UserNotFoundException, UserDAOException {
+        try {
+            User user = userDAO.getByUsername(username);
+            if(user == null){
+                throw new UserNotFoundException("User with username: " + username + " was not found");
+            }
+            return user;
+        } catch (UserDAOException | UserNotFoundException e) {
+            throw e;
+        }
+    }
+
+    @Override
     public boolean authenticate(UserLoginDTO userLoginDTO) throws UserDAOException, UserNotFoundException {
 
         //Input Validation

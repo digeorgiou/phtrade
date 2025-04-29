@@ -19,6 +19,12 @@
         .balance-card { background-color: #b9dae1; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         .positive-balance { color: #198754; }
         .negative-balance { color: #dc3545; }
+        footer {
+                    background-color: #343a40;
+                    color: white;
+                    padding: 1.5rem 0;
+                    margin-top: auto;
+                }
     </style>
 </head>
 <body>
@@ -32,7 +38,7 @@
             </div>
             <div class="dropdown">
                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
-                    <i class="bi bi-person-circle"></i> ${user.username}
+                    <i class="bi bi-person-circle"></i> ${sessionScope.username}
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Settings</a></li>
@@ -132,9 +138,10 @@
         </div>
     </div>
 
+    <!-- Footer -->
     <footer>
         <div class="container text-center">
-            <p class="mb-0">© 2025 PharmaTrade. All rights reserved.</p>
+            <p class="mb-0">© 2025 Coding Factory. All rights reserved.</p>
         </div>
     </footer>
 

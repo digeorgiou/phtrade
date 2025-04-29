@@ -1,6 +1,7 @@
 package gr.aueb.cf.pharmapp.controller;
 
 import gr.aueb.cf.pharmapp.dto.UserLoginDTO;
+import gr.aueb.cf.pharmapp.dto.UserReadOnlyDTO;
 import gr.aueb.cf.pharmapp.exceptions.UserDAOException;
 import gr.aueb.cf.pharmapp.exceptions.UserNotFoundException;
 import gr.aueb.cf.pharmapp.model.User;
@@ -81,10 +82,13 @@ public class LoginController extends BaseServlet {
             }
 
             HttpSession session = request.getSession(true);
+
+            User user = userService.getUserEntityByUsername(username);
             session.setAttribute("authenticated", true);
+            session.setAttribute("user", user);
             session.setAttribute("username", username);
 
-            session.setAttribute("role", userService.getUserByUsername(username).getRole());
+            session.setAttribute("role", user.getRoleType().toString());
 
             if (session.getAttribute("role").equals("ADMIN")) {
                 session.setMaxInactiveInterval(ADMIN_TIMEOUT);

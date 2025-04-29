@@ -20,6 +20,7 @@ public interface IUserService {
     List<UserReadOnlyDTO> getAllUsers() throws UserDAOException;
     UserReadOnlyDTO getUserByUsername(String username) throws UserNotFoundException,
             UserDAOException;
+    User getUserEntityByUsername(String username) throws  UserNotFoundException, UserDAOException;
     List<PharmacyContact> getUserContactsWithPharmacies(Long userId) throws UserDAOException;
     boolean authenticate(UserLoginDTO userLoginDTO)  throws UserNotFoundException, UserDAOException;
     boolean usernameExists(String username) throws UserDAOException;

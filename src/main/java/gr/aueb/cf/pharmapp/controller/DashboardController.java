@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet("/dashboard")
+@WebServlet("/pharmapp/dashboard")
 public class DashboardController extends BaseServlet {
     private IUserService userService;
     private ITradeRecordService tradeService;
@@ -33,7 +33,17 @@ public class DashboardController extends BaseServlet {
         // Get logged in user from session
         User user = (User) request.getSession().getAttribute("user");
 
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
         try {
+
+            // Refresh user data to ensure we have the latest pharmacies and
+            // contacts
+            user = userService.getUserEntityByUsername(user.getUsername());
+
             // Get selected pharmacy
             String pharmacyId = request.getParameter("pharmacyId");
             Pharmacy selectedPharmacy = null;
@@ -63,13 +73,14 @@ public class DashboardController extends BaseServlet {
                 }
             }
 
+            request.setAttribute("user", user);
             request.setAttribute("selectedPharmacy", selectedPharmacy);
             request.setAttribute("balanceList", balanceList);
-            request.getRequestDispatcher("/WEB-INF/views/dashboard.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/dashboard.jsp").forward(request, response);
 
         } catch (Exception e) {
             request.setAttribute("error", "Error loading dashboard: " + e.getMessage());
-            request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/error.jsp").forward(request, response);
         }
     }
 }
