@@ -8,6 +8,7 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 
 import java.util.List;
@@ -27,6 +28,18 @@ public class PharmacyDAOImpl implements  IPharmacyDAO{
         try {
             tx = em.getTransaction();
             tx.begin();
+
+            // If the pharmacy has a user associated, make sure to maintain the bidirectional relationship
+            if (pharmacy.getUser() != null) {
+                // Get the managed user entity
+                User user = em.find(User.class, pharmacy.getUser().getId());
+                if (user != null) {
+                    // Add the pharmacy to the user's collection
+                    user.getPharmacies().add(pharmacy);
+                    em.merge(user); // Ensure the user is updated
+                }
+            }
+
             em.persist(pharmacy);
             tx.commit();
             return pharmacy;
@@ -129,27 +142,28 @@ public class PharmacyDAOImpl implements  IPharmacyDAO{
     }
 
     @Override
-    public List<Pharmacy> getByName(String name) throws PharmacyDAOException {
+    public Pharmacy getByName(String name) throws PharmacyDAOException {
         EntityManager em = emf.createEntityManager();
-        try{
+        try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Pharmacy> query = cb.createQuery(Pharmacy.class);
+            Root<Pharmacy> pharmacy = query.from(Pharmacy.class);
 
-                CriteriaBuilder cb = em.getCriteriaBuilder();
-                CriteriaQuery<Pharmacy> query = cb.createQuery(Pharmacy.class);
-                Root<Pharmacy> pharmacy = query.from(Pharmacy.class);
+            pharmacy.fetch("recordsGiver", JoinType.LEFT);
+            pharmacy.fetch("recordsReceiver", JoinType.LEFT);
+            pharmacy.fetch("contactReferences", JoinType.LEFT);
 
-                query.select(pharmacy)
-                        .where(cb.like(pharmacy.get("name"),"%" + name + "%"));
+            query.select(pharmacy)
+                    .where(cb.equal(pharmacy.get("name"), name));
 
-                List<Pharmacy> pharmacies = em.createQuery(query).getResultList();
+            Pharmacy result = em.createQuery(query).getSingleResult();
 
-                return pharmacies;
+            return result;
 
 
-            }catch (Exception e) {
-
-            throw new PharmacyDAOException("Error retrieving pharmacy by " +
-                    "name: " + e.getMessage());
-        }finally {
+        } catch (Exception e) {
+            throw new PharmacyDAOException("Error retrieving pharmacy by name: " + e.getMessage());
+        } finally {
             if (em != null && em.isOpen()) {
                 em.close();
             }

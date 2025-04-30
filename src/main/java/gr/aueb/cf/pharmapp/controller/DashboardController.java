@@ -7,10 +7,14 @@ import gr.aueb.cf.pharmapp.model.PharmacyContact;
 import gr.aueb.cf.pharmapp.model.User;
 import gr.aueb.cf.pharmapp.service.ITradeRecordService;
 import gr.aueb.cf.pharmapp.service.IUserService;
+import gr.aueb.cf.pharmapp.service.TradeRecordServiceImpl;
+import gr.aueb.cf.pharmapp.service.UserServiceImpl;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.hibernate.Hibernate;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +27,9 @@ public class DashboardController extends BaseServlet {
 
     @Override
     public void init() {
-        // Initialize services
+        EntityManagerFactory emf = getEntityManagerFactory();
+        this.userService = new UserServiceImpl(emf);
+        this.tradeService = new TradeRecordServiceImpl(emf);
     }
 
     @Override
@@ -31,18 +37,16 @@ public class DashboardController extends BaseServlet {
             throws ServletException, IOException {
 
         // Get logged in user from session
-        User user = (User) request.getSession().getAttribute("user");
+        User sessionUser = (User) request.getSession().getAttribute("user");
 
-        if (user == null) {
+        if (sessionUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
         try {
-
-            // Refresh user data to ensure we have the latest pharmacies and
-            // contacts
-            user = userService.getUserEntityByUsername(user.getUsername());
+            // Get fresh user data from database
+            User user = userService.getUserEntityByUsername(sessionUser.getUsername());
 
             // Get selected pharmacy
             String pharmacyId = request.getParameter("pharmacyId");
@@ -56,6 +60,9 @@ public class DashboardController extends BaseServlet {
                         .orElse(null);
 
                 if (selectedPharmacy != null) {
+
+                    Hibernate.initialize(user.getContacts());
+
                     // Get balances with all contacts
                     for (PharmacyContact contact : user.getContacts()) {
                         double balance = tradeService.calculateBalanceBetweenPharmacies(

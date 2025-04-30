@@ -9,56 +9,97 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-        body { background-color: #f8f9fa; display: flex; flex-direction: column; min-height: 100vh; }
-        .navbar { background-color: #b9dae1 !important; }
-        .sidebar { background-color: #e9ecef; min-height: calc(100vh - 56px); box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
+        html, body {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            background-color: #b9dae1 !important;
+        }
+
+        .container-fluid {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .row.h-85 {
+            flex: 1;
+            min-height: 0; /* Fix for Firefox */
+            margin: 0;
+            overflow-y: auto; /* Add scroll to content if needed */
+        }
+
+        .sidebar {
+            background-color: #e9ecef;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .main-content {
+            padding: 20px;
+            background-color: white;
+            overflow-y: auto;
+        }
+
+        footer {
+            background-color: #343a40;
+            color: white;
+            padding: 1.5rem 0;
+            flex-shrink: 0;
+        }
+
         .sidebar .nav-link { color: #495057; border-radius: 5px; margin-bottom: 5px; }
         .sidebar .nav-link:hover { background-color: #dee2e6; }
         .sidebar .nav-link.active { background-color: #b9dae1; color: #343a40; font-weight: 500; }
-        .main-content { padding: 20px; background-color: white; min-height: calc(100vh - 56px); }
         .balance-card { background-color: #b9dae1; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         .positive-balance { color: #198754; }
         .negative-balance { color: #dc3545; }
-        footer {
-                    background-color: #343a40;
-                    color: white;
-                    padding: 1.5rem 0;
-                    margin-top: auto;
-                }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid d-flex justify-content-between align-items-center ms-3">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/dashboard">
-                <img src="${pageContext.request.contextPath}/img/pharmalogo.png" alt="PharmaTrade Logo" style="height: 50px;">
-            </a>
-            <div class="position-absolute start-50 translate-middle-x">
-                <span class="navbar-text fw-bold fs-4" style="color: #343a40;">PharmaTrade Dashboard</span>
-            </div>
-            <div class="dropdown">
-                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
-                    <i class="bi bi-person-circle"></i> ${sessionScope.username}
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Settings</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="${pageContext.request.contextPath}/logout">
-                        <i class="bi bi-box-arrow-right"></i> Logout</a></li>
-                </ul>
+        <div class = "container-fluid">
+            <div class="d-flex justify-content-between w-100 align-items-center
+            ms-3 me-3">
+                <a class="navbar-brand" href="${pageContext.request.contextPath}/dashboard">
+                    <img src="${pageContext.request.contextPath}/img/pharmalogo.png" alt="PharmaTrade Logo" style="height: 50px;">
+                </a>
+                <div class="position-absolute start-50 translate-middle-x">
+                    <span class="navbar-text fw-bold fs-4" style="color: #343a40;">PharmaTrade Dashboard</span>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i> ${sessionScope.username}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/logout">
+                            <i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="container-fluid">
-        <div class="row">
+    <div class="container-fluid px-0">
+        <div class="row h-85">
             <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 sidebar">
                 <div class="sidebar-sticky pt-3">
                     <h5 class="px-3">My Pharmacies</h5>
                     <div class="list-group list-group-flush mb-3">
-                        <c:forEach items="${user.pharmacies}" var="pharmacy">
-                            <a href="${pageContext.request.contextPath}/dashboard?pharmacyId=${pharmacy.id}"
+                        <c:forEach items="${not empty user.pharmacies ? user.pharmacies : []}" var="pharmacy">
+                            <a href="${pageContext.request.contextPath}/pharmapp/dashboard?pharmacyId=${pharmacy.id}"
                                class="list-group-item list-group-item-action ${param.pharmacyId eq pharmacy.id.toString() ? 'active' : ''}">
                                 ${pharmacy.name}
                             </a>

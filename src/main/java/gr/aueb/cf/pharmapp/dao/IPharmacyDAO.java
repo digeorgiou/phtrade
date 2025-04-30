@@ -16,7 +16,7 @@ public interface IPharmacyDAO {
     List<Pharmacy> getAll() throws PharmacyDAOException;
 
     //Queries
-    List<Pharmacy> getByName(String name) throws PharmacyDAOException;
+    Pharmacy getByName(String name) throws PharmacyDAOException;
     Pharmacy findByUser(User user) throws PharmacyDAOException;
     public boolean existsByName(String name) throws PharmacyDAOException;
 

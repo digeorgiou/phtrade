@@ -6,6 +6,7 @@ import gr.aueb.cf.pharmapp.exceptions.TradeRecordDAOException;
 import gr.aueb.cf.pharmapp.exceptions.UserDAOException;
 import gr.aueb.cf.pharmapp.exceptions.UserNotFoundException;
 import gr.aueb.cf.pharmapp.model.Pharmacy;
+import gr.aueb.cf.pharmapp.model.PharmacyContact;
 import gr.aueb.cf.pharmapp.model.TradeRecord;
 import gr.aueb.cf.pharmapp.model.User;
 import gr.aueb.cf.pharmapp.security.SecurityUtil;
@@ -13,9 +14,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.NoResultException;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 
 import java.util.List;
 
@@ -158,6 +157,14 @@ public class UserDAOImpl implements IUserDAO{
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<User> query = cb.createQuery(User.class);
             Root<User> user = query.from(User.class);
+
+            // Eagerly fetch pharmacies and contacts
+            user.fetch("pharmacies", JoinType.LEFT);
+            user.fetch("contacts", JoinType.LEFT);
+
+            // Eagerly fetch contacts and their associated pharmacy
+            Fetch<User, PharmacyContact> contactsFetch = user.fetch("contacts", JoinType.LEFT);
+            contactsFetch.fetch("pharmacy", JoinType.LEFT);
 
             query.select(user)
                     .where(cb.equal(user.get("username"), username));

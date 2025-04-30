@@ -42,7 +42,7 @@ public class PharmacyServiceImpl implements IPharmacyService{
                 throw new UserNotFoundException("Creator user not found");
             }
 
-            if (pharmacyDAO.getByName(dto.getName()) != null){
+            if (pharmacyDAO.existsByName(dto.getName())){
                 throw new PharmacyAlreadyExistsException("Pharmacy with name " + dto.getName() + " already exists");
             }
 
@@ -87,11 +87,7 @@ public class PharmacyServiceImpl implements IPharmacyService{
             }
 
             if (!existing.getName().equals(dto.getName())) {
-                List<Pharmacy> pharmaciesWithSameName = pharmacyDAO.getByName(dto.getName());
-                // Check if any pharmacy (other than this one) has the same name
-                boolean nameExists = pharmaciesWithSameName.stream()
-                        .anyMatch(p -> !p.getId().equals(id));
-                if (nameExists) {
+                if (pharmacyDAO.getByName(dto.getName() ) != null ){
                     throw new PharmacyAlreadyExistsException(
                             "Pharmacy with name '" + dto.getName() + "' already exists");
                 }
@@ -166,15 +162,12 @@ public class PharmacyServiceImpl implements IPharmacyService{
     }
 
     @Override
-    public List<PharmacyReadOnlyDTO> getPharmaciesByName(String name) throws PharmacyDAOException {
-        List<Pharmacy> pharmacies;
+    public PharmacyReadOnlyDTO getPharmaciesByName(String name) throws PharmacyDAOException {
+        Pharmacy pharmacy;
 
         try{
-            pharmacies = pharmacyDAO.getByName(name);
-            return pharmacies.stream()
-                    .map(Mapper::mapPharmacyToReadOnlyDTO)
-                    .flatMap(Optional::stream)
-                    .collect(Collectors.toList());
+            pharmacy = pharmacyDAO.getByName(name);
+            return  Mapper.mapPharmacyToReadOnlyDTO(pharmacy).orElse(null);
         }catch (PharmacyDAOException e){
             throw new PharmacyDAOException("Error retrieving pharmacies by " +
                     "name " + name);

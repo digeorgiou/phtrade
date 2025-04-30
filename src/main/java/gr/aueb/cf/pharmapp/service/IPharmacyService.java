@@ -22,7 +22,7 @@ public interface IPharmacyService {
     PharmacyReadOnlyDTO getPharmacyById(Long id) throws PharmacyNotFoundException, PharmacyDAOException;
     List<PharmacyReadOnlyDTO> searchPharmaciesByName(String name) throws PharmacyDAOException;
     List<PharmacyReadOnlyDTO> getAllPharmacies() throws PharmacyDAOException;
-    List<PharmacyReadOnlyDTO> getPharmaciesByName(String name) throws PharmacyDAOException;
+    PharmacyReadOnlyDTO getPharmaciesByName(String name) throws PharmacyDAOException;
     boolean canAddAsContact(Long userId, Long pharmacyId)
             throws PharmacyNotFoundException, PharmacyDAOException, UserDAOException;
 
