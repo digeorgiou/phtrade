@@ -1,5 +1,6 @@
 package gr.aueb.cf.pharmapp.dao;
 
+import gr.aueb.cf.pharmapp.dto.RecentTradeDTO;
 import gr.aueb.cf.pharmapp.exceptions.PharmacyDAOException;
 import gr.aueb.cf.pharmapp.exceptions.TradeRecordDAOException;
 import gr.aueb.cf.pharmapp.model.Pharmacy;
@@ -15,6 +16,7 @@ import jakarta.persistence.criteria.Root;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TradeRecordDAOImpl implements ITradeRecordDAO {
 
@@ -171,4 +173,6 @@ public class TradeRecordDAOImpl implements ITradeRecordDAO {
         }
 
     }
+
+
 }

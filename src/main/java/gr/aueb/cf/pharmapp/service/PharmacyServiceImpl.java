@@ -13,7 +13,9 @@ import gr.aueb.cf.pharmapp.mapper.Mapper;
 import gr.aueb.cf.pharmapp.model.Pharmacy;
 import gr.aueb.cf.pharmapp.model.User;
 import jakarta.persistence.EntityManagerFactory;
+import org.hibernate.Hibernate;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -147,6 +149,24 @@ public class PharmacyServiceImpl implements IPharmacyService{
     }
 
     @Override
+    public Pharmacy getPharmacyEntityById(Long id) throws PharmacyNotFoundException, PharmacyDAOException {
+        try {
+            Pharmacy pharmacy = pharmacyDAO.getPharmacyWithRelationsById(id);
+            if (pharmacy == null) {
+                throw new PharmacyNotFoundException("Pharmacy with id " + id + " was not found");
+            }
+
+            // Initialize necessary collections
+            Hibernate.initialize(pharmacy.getUser());
+            Hibernate.initialize(pharmacy.getContactReferences());
+
+            return pharmacy;
+        } catch (PharmacyDAOException e) {
+            throw e;
+        }
+    }
+
+    @Override
     public List<PharmacyReadOnlyDTO> getAllPharmacies() throws PharmacyDAOException {
         List<Pharmacy> pharmacies;
 
@@ -175,6 +195,35 @@ public class PharmacyServiceImpl implements IPharmacyService{
     }
 
     @Override
+    public List<PharmacyReadOnlyDTO> searchPharmaciesByName(String name) throws PharmacyDAOException {
+        try {
+            List<Pharmacy> pharmacies = pharmacyDAO.searchPharmaciesByName(name);
+            return pharmacies.stream()
+                    .map(Mapper::mapPharmacyToReadOnlyDTO)
+                    .flatMap(Optional::stream)
+                    .collect(Collectors.toList());
+        }catch (PharmacyDAOException e){
+            throw new PharmacyDAOException("Error retrieving pharmacies by " +
+                    "name " + name);
+        }
+    }
+
+    @Override
+    public List<PharmacyReadOnlyDTO> searchPharmaciesByUser(String username) throws PharmacyDAOException {
+        try {
+            List<Pharmacy> pharmacies = pharmacyDAO.searchPharmaciesByUser(username);
+            return pharmacies.stream()
+                    .map(Mapper::mapPharmacyToReadOnlyDTO)
+                    .flatMap(Optional::stream)
+                    .collect(Collectors.toList());
+        } catch (PharmacyDAOException e){
+            throw new PharmacyDAOException("Error retrieving pharmacies by " +
+                    "user " + username);
+        }
+    }
+
+
+    @Override
     public boolean nameExists(String name) throws PharmacyDAOException {
         try{
             return pharmacyDAO.existsByName(name);
@@ -183,10 +232,6 @@ public class PharmacyServiceImpl implements IPharmacyService{
         }
     }
 
-    @Override
-    public List<PharmacyReadOnlyDTO> searchPharmaciesByName(String name) throws PharmacyDAOException {
-        return List.of();
-    }
 
     @Override
     public boolean canAddAsContact(Long userId, Long pharmacyId) throws PharmacyNotFoundException, PharmacyDAOException, UserDAOException {

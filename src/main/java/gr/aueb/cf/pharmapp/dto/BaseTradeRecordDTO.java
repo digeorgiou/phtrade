@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 public class BaseTradeRecordDTO {
 
     private String description;
-
     private Double amount;
 
     public BaseTradeRecordDTO() {

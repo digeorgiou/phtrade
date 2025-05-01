@@ -159,8 +159,7 @@ public class UserDAOImpl implements IUserDAO{
             Root<User> user = query.from(User.class);
 
             // Eagerly fetch pharmacies and contacts
-            user.fetch("pharmacies", JoinType.LEFT);
-            user.fetch("contacts", JoinType.LEFT);
+            Fetch<User, Pharmacy> pharmaciesFetch = user.fetch("pharmacies", JoinType.LEFT);
 
             // Eagerly fetch contacts and their associated pharmacy
             Fetch<User, PharmacyContact> contactsFetch = user.fetch("contacts", JoinType.LEFT);

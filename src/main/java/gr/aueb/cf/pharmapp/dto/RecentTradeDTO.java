@@ -1,32 +1,35 @@
 package gr.aueb.cf.pharmapp.dto;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class RecentTradeDTO {
 
-    private LocalDateTime transactionDate;
-    private String description;
-    private double amount;
-    private String counterpartyName;
-    private boolean isOutgoing;
+    private LocalDateTime date = LocalDateTime.now();
+    private String description = "No description";
+    private double amount = 0.0;
+    private boolean outgoing = false;
+    private String formattedDate;
 
     public RecentTradeDTO() {
     }
 
-    public RecentTradeDTO(LocalDateTime transactionDate, String description, double amount, String counterpartyName, boolean isOutgoing) {
-        this.transactionDate = transactionDate;
-        this.description = description;
-        this.amount = amount;
-        this.counterpartyName = counterpartyName;
-        this.isOutgoing = isOutgoing;
+    public RecentTradeDTO(LocalDateTime date, String description,
+                          Double amount, boolean outgoing) {
+        this.date = date != null ? date : LocalDateTime.now();
+        this.description = description != null ? description : "No description";
+        this.amount = amount != null ? amount : 0.0;
+        this.outgoing = outgoing;
+        this.formattedDate = date.format(DateTimeFormatter.ofPattern("dd/MM HH:mm"));
     }
 
-    public LocalDateTime getTransactionDate() {
-        return transactionDate;
+    public String getFormattedDate() {
+        return formattedDate;
     }
 
-    public void setTransactionDate(LocalDateTime transactionDate) {
-        this.transactionDate = transactionDate;
+    public void setDate(LocalDateTime date) {
+        this.date = date;
+        this.formattedDate = date.format(DateTimeFormatter.ofPattern("dd/MM HH:mm"));
     }
 
     public String getDescription() {
@@ -45,19 +48,11 @@ public class RecentTradeDTO {
         this.amount = amount;
     }
 
-    public String getCounterpartyName() {
-        return counterpartyName;
-    }
-
-    public void setCounterpartyName(String counterpartyName) {
-        this.counterpartyName = counterpartyName;
-    }
-
     public boolean isOutgoing() {
-        return isOutgoing;
+        return outgoing;
     }
 
     public void setOutgoing(boolean outgoing) {
-        isOutgoing = outgoing;
+        this.outgoing = outgoing;
     }
 }

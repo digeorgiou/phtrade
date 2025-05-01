@@ -6,10 +6,8 @@ import gr.aueb.cf.pharmapp.model.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.criteria.*;
 
 import java.util.List;
 
@@ -142,6 +140,32 @@ public class PharmacyDAOImpl implements  IPharmacyDAO{
     }
 
     @Override
+    public Pharmacy getPharmacyWithRelationsById(Long id) throws PharmacyDAOException {
+        EntityManager em = emf.createEntityManager();
+        try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Pharmacy> query = cb.createQuery(Pharmacy.class);
+            Root<Pharmacy> pharmacy = query.from(Pharmacy.class);
+
+            // Eagerly fetch all relationships
+            pharmacy.fetch("user", JoinType.LEFT);
+            pharmacy.fetch("recordsGiver", JoinType.LEFT);
+            pharmacy.fetch("recordsReceiver", JoinType.LEFT);
+            pharmacy.fetch("contactReferences", JoinType.LEFT);
+
+            query.where(cb.equal(pharmacy.get("id"), id));
+
+            return em.createQuery(query).getSingleResult();
+        } catch (Exception e) {
+            throw new PharmacyDAOException("Error fetching pharmacy with relations: " + e.getMessage());
+        } finally {
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
+        }
+    }
+
+    @Override
     public Pharmacy getByName(String name) throws PharmacyDAOException {
         EntityManager em = emf.createEntityManager();
         try {
@@ -171,26 +195,57 @@ public class PharmacyDAOImpl implements  IPharmacyDAO{
     }
 
     @Override
-    public Pharmacy findByUser(User user) throws PharmacyDAOException {
+    public List<Pharmacy> searchPharmaciesByName(String name) throws PharmacyDAOException {
         EntityManager em = emf.createEntityManager();
-        try{
-
+        try {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Pharmacy> query = cb.createQuery(Pharmacy.class);
             Root<Pharmacy> pharmacy = query.from(Pharmacy.class);
 
-            query.select(pharmacy)
-                    .where(cb.equal(pharmacy.get("user"),user));
+            // Fetch the user relationship
+            Fetch<Pharmacy, User> userFetch = pharmacy.fetch("user", JoinType.LEFT);
 
-            Pharmacy result = em.createQuery(query).getSingleResult();
+            // For criteria conditions, create a separate join
+            Join<Pharmacy, User> userJoin = pharmacy.join("user", JoinType.LEFT);
 
-            return result;
+            query.where(cb.like(
+                    cb.lower(pharmacy.get("name")),
+                    "%" + name.toLowerCase() + "%"
+            ));
 
-        }catch (Exception e) {
+            return em.createQuery(query).getResultList();
+        } catch (Exception e) {
+            throw new PharmacyDAOException("Error searching pharmacies by name: " + e.getMessage());
+        } finally {
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
+        }
+    }
 
-            throw new PharmacyDAOException("Error retrieving pharmacy by " +
-                    "user: " + e.getMessage());
-        }finally {
+    @Override
+    public List<Pharmacy> searchPharmaciesByUser(String username) throws PharmacyDAOException {
+        EntityManager em = emf.createEntityManager();
+        try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Pharmacy> query = cb.createQuery(Pharmacy.class);
+            Root<Pharmacy> pharmacy = query.from(Pharmacy.class);
+
+            // Fetch the user relationship
+            Fetch<Pharmacy, User> userFetch = pharmacy.fetch("user", JoinType.LEFT);
+
+            // For criteria conditions, create a separate join
+            Join<Pharmacy, User> userJoin = pharmacy.join("user", JoinType.LEFT);
+
+            query.where(cb.like(
+                    cb.lower(userJoin.get("username")),
+                    "%" + username.toLowerCase() + "%"
+            ));
+
+            return em.createQuery(query).getResultList();
+        } catch (Exception e) {
+            throw new PharmacyDAOException("Error searching pharmacies by user: " + e.getMessage());
+        } finally {
             if (em != null && em.isOpen()) {
                 em.close();
             }

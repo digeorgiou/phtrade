@@ -16,8 +16,10 @@ public interface IPharmacyDAO {
     List<Pharmacy> getAll() throws PharmacyDAOException;
 
     //Queries
+    Pharmacy getPharmacyWithRelationsById(Long id) throws PharmacyDAOException;
     Pharmacy getByName(String name) throws PharmacyDAOException;
-    Pharmacy findByUser(User user) throws PharmacyDAOException;
+    List<Pharmacy> searchPharmaciesByName(String name) throws PharmacyDAOException;
+    List<Pharmacy> searchPharmaciesByUser(String username) throws PharmacyDAOException;
     public boolean existsByName(String name) throws PharmacyDAOException;
 
 }

@@ -19,10 +19,7 @@ import jakarta.persistence.criteria.Root;
 
 import javax.xml.transform.TransformerException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TradeRecordServiceImpl implements ITradeRecordService{
@@ -38,6 +35,8 @@ public class TradeRecordServiceImpl implements ITradeRecordService{
         this.userDAO = new UserDAOImpl(emf);
         this.emf = emf;
     }
+
+
 
     @Override
     public TradeRecordReadOnlyDTO create(TradeRecordInsertDTO dto) throws TradeRecordDAOException, TradeRecordAlreadyExistsException,
@@ -416,112 +415,142 @@ public class TradeRecordServiceImpl implements ITradeRecordService{
     }
 
     @Override
-    public List<PharmacyBalanceDTO> getPharmacyBalancesWithContacts(Long pharmacyId) throws PharmacyNotFoundException,
-            PharmacyDAOException, TradeRecordDAOException {
+    public Integer getTradeCountBetweenPharmacies(Long pharmacy1Id, Long pharmacy2Id) throws TradeRecordDAOException {
+        EntityManager em = emf.createEntityManager();
+        try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Long> query = cb.createQuery(Long.class);
+            Root<TradeRecord> trade = query.from(TradeRecord.class);
 
-        Pharmacy pharmacy = pharmacyDAO.getById(pharmacyId);
-        // Verify pharmacy exists
-       if(pharmacy == null) {
-           throw new PharmacyNotFoundException("Pharmacy not found with id: " + pharmacyId);
-       }
+            Predicate giver1Receiver2 = cb.and(
+                    cb.equal(trade.get("giver").get("id"), pharmacy1Id),
+                    cb.equal(trade.get("receiver").get("id"), pharmacy2Id)
+            );
+            Predicate giver2Receiver1 = cb.and(
+                    cb.equal(trade.get("giver").get("id"), pharmacy2Id),
+                    cb.equal(trade.get("receiver").get("id"), pharmacy1Id)
+            );
 
-        // Get all contacts for this pharmacy's owner
-       List<PharmacyContact> contacts =
-               pharmacy.getUser().getContacts().stream().toList();
-       List<PharmacyBalanceDTO> balances = new ArrayList<>();
+            query.select(cb.count(trade))
+                    .where(cb.or(giver1Receiver2, giver2Receiver1));
 
-       for(PharmacyContact contact : contacts){
-           double balance = calculateBalanceBetweenPharmacies(pharmacyId,
-                   contact.getPharmacy().getId());
-
-           balances.add(new PharmacyBalanceDTO(
-                   contact.getContactName(),
-                   contact.getPharmacy().getName(),
-                   contact.getPharmacy().getId(),
-                   balance
-           ));
-       }
-
-       balances.sort(Comparator.comparing(PharmacyBalanceDTO::getContactName));
-
-       return balances;
+            return em.createQuery(query).getSingleResult().intValue();
+        } finally {
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
+        }
     }
 
     @Override
-    public List<RecentTradeDTO> getRecentTradesForDashboard(Long pharmacyId, int limit)
-            throws PharmacyNotFoundException, PharmacyDAOException, TradeRecordDAOException {
+    public List<RecentTradeDTO> getRecentTradesBetweenPharmacies(Long pharmacy1Id, Long pharmacy2Id, int limit)
+            throws TradeRecordDAOException {
+        EntityManager em = emf.createEntityManager();
+        try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<TradeRecord> query = cb.createQuery(TradeRecord.class);
+            Root<TradeRecord> trade = query.from(TradeRecord.class);
 
-        Pharmacy pharmacy = pharmacyDAO.getById(pharmacyId);
-        // Verify pharmacy exists
-        if(pharmacy == null) {
-            throw new PharmacyNotFoundException("Pharmacy not found with id: " + pharmacyId);
+            Predicate giver1Receiver2 = cb.and(
+                    cb.equal(trade.get("giver").get("id"), pharmacy1Id),
+                    cb.equal(trade.get("receiver").get("id"), pharmacy2Id)
+            );
+
+            Predicate giver2Receiver1 = cb.and(
+                    cb.equal(trade.get("giver").get("id"), pharmacy2Id),
+                    cb.equal(trade.get("receiver").get("id"), pharmacy1Id)
+            );
+
+            query.where(cb.or(giver1Receiver2, giver2Receiver1))
+                    .orderBy(cb.desc(trade.get("transactionDate")));
+
+            List<TradeRecord> records = em.createQuery(query)
+                    .setMaxResults(limit)
+                    .getResultList();
+
+            return records.stream()
+                    .map(record -> {
+                        // Ensure all fields have values
+                        RecentTradeDTO dto = new RecentTradeDTO();
+                        dto.setDate(record.getTransactionDate() != null ?
+                                record.getTransactionDate() : LocalDateTime.now());
+                        dto.setDescription(record.getDescription() != null ?
+                                record.getDescription() : "No description");
+                        dto.setAmount(record.getAmount() != null ?
+                                record.getAmount() : 0.0);
+                        dto.setOutgoing(record.getGiver() != null &&
+                                record.getGiver().getId().equals(pharmacy1Id));
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+        } finally {
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
         }
-
-        List<TradeRecord> recentTrades = tradeRecordDAO.findRecentTradesByPharmacy(pharmacyId, limit);
-
-        return recentTrades.stream()
-                .map(trade -> {
-                    boolean isOutgoing = trade.getGiver().getId().equals(pharmacyId);
-
-                    return new RecentTradeDTO(
-                            trade.getTransactionDate(),
-                            trade.getDescription(),
-                            trade.getAmount(),
-                            isOutgoing ? trade.getReceiver().getName() : trade.getGiver().getName(),
-                            isOutgoing
-                    );
-                })
-                .collect(Collectors.toList());
     }
 
     @Override
     public TradeRecordReadOnlyDTO recordTrade(TradeRecordInsertDTO dto, Long recorderUserId)
             throws TradeRecordDAOException, PharmacyNotFoundException,
-            UserAnauthorizedException, UserDAOException,UserNotFoundException
-            , PharmacyDAOException {
+            UserAnauthorizedException, UserDAOException, UserNotFoundException {
 
-        // Validate input
-        if (dto.getAmount() <= 0) {
-            throw new IllegalArgumentException("Trade amount must be positive");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = null;
+
+        try {
+            tx = em.getTransaction();
+            tx.begin();
+
+            // Get fresh entities from the current session
+            Pharmacy giver = em.find(Pharmacy.class, dto.getGiverPharmacyId());
+            Pharmacy receiver = em.find(Pharmacy.class, dto.getReceiverPharmacyId());
+            User recorder = em.find(User.class, recorderUserId);
+
+            // Validate entities
+            if (giver == null || receiver == null) {
+                throw new PharmacyNotFoundException("Pharmacy not found");
+            }
+            if (recorder == null) {
+                throw new UserNotFoundException("User not found");
+            }
+
+            // Verify permissions
+            if (!giver.getUser().getId().equals(recorderUserId) &&
+                    !receiver.getUser().getId().equals(recorderUserId) &&
+                    !userDAO.isAdmin(recorderUserId)) {
+                throw new UserAnauthorizedException("Unauthorized");
+            }
+
+            // Create new trade record
+            TradeRecord record = new TradeRecord();
+            record.setDescription(dto.getDescription());
+            record.setAmount(dto.getAmount());
+            record.setGiver(giver);
+            record.setReceiver(receiver);
+            record.setRecorder(recorder);
+            record.setTransactionDate(dto.getTransactionDate() != null ?
+                    dto.getTransactionDate() : LocalDateTime.now());
+
+            // Save the record
+            em.persist(record);
+
+            // Update both sides of the relationship
+            giver.addRecordGiver(record);
+            receiver.addRecordReceiver(record);
+
+            em.merge(giver);
+            em.merge(receiver);
+
+            tx.commit();
+
+            return Mapper.mapTradeRecordToReadOnlyDTO(record).orElse(null);
+
+        } catch (Exception e) {
+            if (tx != null && tx.isActive()) tx.rollback();
+            throw new TradeRecordDAOException("Error recording trade: " + e.getMessage());
+        } finally {
+            if (em != null && em.isOpen()) em.close();
         }
-
-        // Get recorder user
-        User recorder = userDAO.getById(recorderUserId);
-        if(recorder == null) {
-            throw new UserNotFoundException("User not found with id: " + recorderUserId);
-        }
-
-        // Get giver and receiver pharmacies
-        Pharmacy giver = pharmacyDAO.getById(dto.getGiverPharmacyId());
-        if(giver == null) {throw  new PharmacyNotFoundException(
-            "Giver pharmacy not found");
-        }
-
-        Pharmacy receiver = pharmacyDAO.getById(dto.getReceiverPharmacyId());
-        if(receiver == null) {throw  new PharmacyNotFoundException(
-                "Receiver pharmacy not found");
-        }
-        // Verify recorder has permission for giver pharmacy
-        if (!giver.getUser().getId().equals(recorderUserId) && !receiver.getUser().getId().equals(recorderUserId) && !userDAO.isAdmin(recorderUserId)) {
-            throw new UserAnauthorizedException("User not authorized to record trades for this pharmacy");
-        }
-
-        // Create and save trade record
-        TradeRecord tradeRecord = new TradeRecord();
-        tradeRecord.setDescription(dto.getDescription());
-        tradeRecord.setAmount(dto.getAmount());
-        tradeRecord.setGiver(giver);
-        tradeRecord.setReceiver(receiver);
-        tradeRecord.setRecorder(recorder);
-        tradeRecord.setTransactionDate(dto.getTransactionDate() != null ?
-                dto.getTransactionDate() : LocalDateTime.now());
-        TradeRecord savedRecord = tradeRecordDAO.save(tradeRecord);
-
-
-        pharmacyDAO.save(giver);
-        pharmacyDAO.save(receiver);
-
-        return Mapper.mapTradeRecordToReadOnlyDTO(savedRecord).orElseThrow(
-                () -> new TradeRecordDAOException("Error mapping trade record to DTO"));
     }
 }

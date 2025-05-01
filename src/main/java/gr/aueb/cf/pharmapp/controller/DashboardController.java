@@ -2,6 +2,7 @@ package gr.aueb.cf.pharmapp.controller;
 
 import gr.aueb.cf.pharmapp.controller.BaseServlet;
 import gr.aueb.cf.pharmapp.dto.PharmacyBalanceDTO;
+import gr.aueb.cf.pharmapp.dto.RecentTradeDTO;
 import gr.aueb.cf.pharmapp.model.Pharmacy;
 import gr.aueb.cf.pharmapp.model.PharmacyContact;
 import gr.aueb.cf.pharmapp.model.User;
@@ -61,22 +62,46 @@ public class DashboardController extends BaseServlet {
 
                 if (selectedPharmacy != null) {
 
+
                     Hibernate.initialize(user.getContacts());
 
                     // Get balances with all contacts
                     for (PharmacyContact contact : user.getContacts()) {
+                        Pharmacy contactPharmacy = contact.getPharmacy();
+                        if (contactPharmacy == null) continue;  // Skip if no pharmacy
+
                         double balance = tradeService.calculateBalanceBetweenPharmacies(
                                 selectedPharmacy.getId(),
-                                contact.getPharmacy().getId()
+                                contactPharmacy.getId()
                         );
 
+                        Integer tradeCount =
+                                tradeService.getTradeCountBetweenPharmacies(selectedPharmacy.getId(), contactPharmacy.getId());
+
+                        List<RecentTradeDTO> recentTrades = tradeService.getRecentTradesBetweenPharmacies(
+                                selectedPharmacy.getId(),
+                                contactPharmacy.getId(),
+                                5
+                        );
+
+                        if (recentTrades == null) {
+                            recentTrades = new ArrayList<>();
+                        }
+
+                        // Ensure all fields have values
                         balanceList.add(new PharmacyBalanceDTO(
-                                contact.getContactName(),
-                                contact.getPharmacy().getName(),
-                                contact.getPharmacy().getId(),
-                                balance
+                                contact.getContactName() != null ? contact.getContactName() : "Contact",
+                                contactPharmacy.getName() != null ? contactPharmacy.getName() : "Pharmacy",
+                                contactPharmacy.getId(),
+                                balance,
+                                recentTrades != null ? recentTrades :
+                                        new ArrayList<>(),
+                                tradeCount
+
                         ));
                     }
+
+                    balanceList.sort((b1, b2) -> Integer.compare(b2.getTradeCount(), b1.getTradeCount()));
                 }
             }
 

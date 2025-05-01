@@ -6,7 +6,7 @@ public class PharmacyReadOnlyDTO extends BasePharmacyDTO{
 
     private Long id;
     private LocalDateTime createdAt;
-    private String username;
+    private String ownerUsername;
 
     public PharmacyReadOnlyDTO() {
     }
@@ -16,7 +16,7 @@ public class PharmacyReadOnlyDTO extends BasePharmacyDTO{
         super(name);
         this.id = id;
         this.createdAt = createdAt;
-        this.username = username;
+        this.ownerUsername = username;
     }
 
     public Long getId() {
@@ -35,11 +35,11 @@ public class PharmacyReadOnlyDTO extends BasePharmacyDTO{
         this.createdAt = createdAt;
     }
 
-    public String getUsername() {
-        return username;
+    public String getOwnerUsername() {
+        return ownerUsername;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setOwnerUsername(String ownerUsername) {
+        this.ownerUsername = ownerUsername;
     }
 }

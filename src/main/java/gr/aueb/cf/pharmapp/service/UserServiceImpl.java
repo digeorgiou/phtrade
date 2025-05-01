@@ -16,6 +16,7 @@ import gr.aueb.cf.pharmapp.model.PharmacyContact;
 import gr.aueb.cf.pharmapp.model.User;
 import gr.aueb.cf.pharmapp.security.SecurityUtil;
 import jakarta.persistence.EntityManagerFactory;
+import org.hibernate.Hibernate;
 
 import java.util.List;
 import java.util.Optional;
@@ -130,11 +131,21 @@ public class UserServiceImpl implements IUserService{
     public User getUserEntityByUsername(String username) throws UserNotFoundException, UserDAOException {
         try {
             User user = userDAO.getByUsername(username);
-            if(user == null){
+            if (user == null) {
                 throw new UserNotFoundException("User with username: " + username + " was not found");
             }
+
+            // Initialize collections if they're still lazy (defensive programming)
+            if (user.getPharmacies() != null) {
+                Hibernate.initialize(user.getPharmacies());
+                // Initialize basic fields for each pharmacy if needed
+                user.getPharmacies().forEach(p -> {
+                    p.getName(); // Trigger initialization of basic fields
+                });
+            }
+
             return user;
-        } catch (UserDAOException | UserNotFoundException e) {
+        } catch (UserDAOException e) {
             throw e;
         }
     }

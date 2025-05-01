@@ -28,14 +28,14 @@ public interface ITradeRecordService {
             TradeRecordDAOException;
     Double calculateBalanceBetweenPharmacies(Long pharmacy1Id, Long pharmacy2Id)
             throws PharmacyNotFoundException, PharmacyDAOException, TradeRecordDAOException;
-    List<PharmacyBalanceDTO> getPharmacyBalancesWithContacts(Long pharmacyId)
-            throws PharmacyNotFoundException, PharmacyDAOException, TradeRecordDAOException;
-    List<RecentTradeDTO> getRecentTradesForDashboard(Long pharmacyId, int limit)
-            throws PharmacyNotFoundException, PharmacyDAOException, TradeRecordDAOException;
     TradeRecordReadOnlyDTO recordTrade(TradeRecordInsertDTO dto, Long recorderUserId)
             throws TradeRecordDAOException, PharmacyNotFoundException,
             UserAnauthorizedException, UserDAOException,UserNotFoundException
             , PharmacyDAOException;
+    Integer getTradeCountBetweenPharmacies(Long pharmacy1Id,
+                                           Long pharmacy2Id) throws TradeRecordDAOException;
+    List<RecentTradeDTO> getRecentTradesBetweenPharmacies(Long pharmacy1Id, Long pharmacy2Id, int limit)
+            throws TradeRecordDAOException;
 
 
 
