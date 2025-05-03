@@ -57,6 +57,13 @@
             flex-shrink: 0;
         }
 
+        .bg-light-green {
+                background-color: #e8f5e9;  /* Very light green */
+            }
+            .bg-light-red {
+                background-color: #ffebee;  /* Very light red */
+            }
+
         .sidebar .nav-link { color: #495057; border-radius: 5px; margin-bottom: 5px; }
         .sidebar .nav-link:hover { background-color: #dee2e6; }
         .sidebar .nav-link.active { background-color: #b9dae1; color: #343a40; font-weight: 500; }
@@ -151,6 +158,48 @@
                 <c:choose>
                     <c:when test="${not empty selectedPharmacy}">
                         <h2>${selectedPharmacy.name} - Balances</h2>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <!-- Simple Search Form -->
+                                <form action="${pageContext.request.contextPath}/pharmapp/dashboard" method="GET" class="mb-3">
+                                    <input type="hidden" name="pharmacyId" value="${selectedPharmacy.id}">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="search"
+                                               placeholder="Search contacts..." value="${not empty searchTerm ? searchTerm : ''}">
+                                        <button class="btn btn-primary" type="submit">
+                                            <i class="bi bi-search"></i> Search
+                                        </button>
+                                        <c:if test="${not empty searchTerm}">
+                                            <a href="${pageContext.request.contextPath}/pharmapp/dashboard?pharmacyId=${selectedPharmacy.id}"
+                                               class="btn btn-outline-secondary">
+                                                <i class="bi bi-x"></i> Clear
+                                            </a>
+                                        </c:if>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- Simple Sort Links -->
+                                <div class="btn-group float-end">
+                                    <a href="?pharmacyId=${selectedPharmacy.id}&search=${not empty searchTerm ? searchTerm : ''}&sort=name"
+                                       class="btn btn-outline-primary ${currentSort == 'name' ? 'active' : ''}">
+                                        A-Z
+                                    </a>
+                                    <a href="?pharmacyId=${selectedPharmacy.id}&search=${not empty searchTerm ? searchTerm : ''}&sort=name-desc"
+                                       class="btn btn-outline-primary ${currentSort == 'name-desc' ? 'active' : ''}">
+                                        Z-A
+                                    </a>
+                                    <a href="?pharmacyId=${selectedPharmacy.id}&search=${not empty searchTerm ? searchTerm : ''}&sort=trades"
+                                       class="btn btn-outline-primary ${currentSort == 'trades' ? 'active' : ''}">
+                                        Most Trades
+                                    </a>
+                                    <a href="?pharmacyId=${selectedPharmacy.id}&search=${not empty searchTerm ? searchTerm : ''}&sort=trades-desc"
+                                       class="btn btn-outline-primary ${currentSort == 'trades-desc' ? 'active' : ''}">
+                                        Fewest Trades
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                         <p class="text-muted">Current balances with your contacts</p>
 
                         <c:choose>
@@ -166,28 +215,44 @@
                                             d-flex flex-column position-relative">
                                                 <p class="position-absolute
                                                 top-0 end-0 m-3"> <!-- Positioning classes -->
-                                                    <span>Αριθμός
+                                                    <small class="text-muted">Αριθμός
                                                     Συναλλαγών:
                                                     ${balance
-                                                    .tradeCount}</span>
+                                                    .tradeCount}</small>
                                                 </p>
                                                 <div class="flex-grow-0">
-                                                    <h5>${not empty balance.contactName ? balance.contactName : 'No contact name'}</h5>
-                                                    <p class="mb-1">${not empty balance.pharmacyName ? balance.pharmacyName : 'Unknown pharmacy'}</p>
-                                                    <h4 class="${balance.amount >= 0 ? 'positive-balance' : 'negative-balance'}">
-                                                        €<fmt:formatNumber value="${not empty balance.amount ? balance.amount : 0}"
-                                                        minFractionDigits="2" maxFractionDigits="2"/>
+                                                    <h4>${not empty balance
+                                                    .contactName ? balance
+                                                    .contactName : 'No contact name'}</h4>
+                                                    <small class="text-muted">${not empty balance.pharmacyName ? balance.pharmacyName : 'Unknown pharmacy'}</small>
+                                                    <h4 class="${balance.amount
+                                                    < 0 ? 'text-success' :
+                                                    (balance.amount > 0 ?
+                                                    'text-danger' : '')} mt-1">
+                                                        <c:choose>
+                                                            <c:when test="${balance.amount < 0}">
+                                                                ΜΑΣ ΧΡΩΣΤΑΝΕ €<fmt:formatNumber value="${-balance.amount}" minFractionDigits="2" maxFractionDigits="2"/>
+                                                            </c:when>
+                                                            <c:when test="${balance.amount > 0}">
+                                                                ΧΡΩΣΤΑΜΕ €<fmt:formatNumber value="${balance.amount}" minFractionDigits="2" maxFractionDigits="2"/>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                €<fmt:formatNumber value="${balance.amount}" minFractionDigits="2" maxFractionDigits="2"/>
+                                                            </c:otherwise>
+                                                        </c:choose>
                                                     </h4>
                                                 </div>
 
                                                 <!-- Recent trades section -->
-                                                <div class="recent-trades mt-3 flex-grow-1 overflow-hidden d-flex flex-column";>
-                                                    <h6 class="flex-grow-0">Recent Trades:</h6>
+                                                <div class="recent-trades mt-1
+                                                flex-grow-1 overflow-hidden d-flex flex-column";>
+                                                    <h6
+                                                    class="flex-grow-0">Πρόσφατες Συναλλαγές:</h6>
                                                     <ul class="list-group
                                                     list-group-flush flex-grow-1
                                                      overflow-auto" >
                                                         <c:forEach items="${balance.recentTrades}" var="trade">
-                                                            <li class="list-group-item p-1 ${trade.outgoing ? 'bg-light' : ''}">
+                                                            <li class="list-group-item p-1 ${trade.outgoing ? 'bg-light-red' : 'bg-light-green'}">
                                                                 <small>
                                                                     ${trade.formattedDate} - ${trade.description}
                                                                     <span class="float-end">

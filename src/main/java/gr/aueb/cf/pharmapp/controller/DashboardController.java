@@ -19,7 +19,9 @@ import org.hibernate.Hibernate;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @WebServlet("/pharmapp/dashboard")
 public class DashboardController extends BaseServlet {
@@ -51,6 +53,11 @@ public class DashboardController extends BaseServlet {
 
             // Get selected pharmacy
             String pharmacyId = request.getParameter("pharmacyId");
+
+            // Get search and sort parameters
+            String searchTerm = request.getParameter("search");
+            String sortBy = request.getParameter("sort");
+
             Pharmacy selectedPharmacy = null;
             List<PharmacyBalanceDTO> balanceList = new ArrayList<>();
 
@@ -65,8 +72,10 @@ public class DashboardController extends BaseServlet {
 
                     Hibernate.initialize(user.getContacts());
 
+                    List<PharmacyContact> contacts = getFilteredSortedContacts(user, searchTerm, sortBy);
+
                     // Get balances with all contacts
-                    for (PharmacyContact contact : user.getContacts()) {
+                    for (PharmacyContact contact : contacts) {
                         Pharmacy contactPharmacy = contact.getPharmacy();
                         if (contactPharmacy == null) continue;  // Skip if no pharmacy
 
@@ -101,13 +110,17 @@ public class DashboardController extends BaseServlet {
                         ));
                     }
 
-                    balanceList.sort((b1, b2) -> Integer.compare(b2.getTradeCount(), b1.getTradeCount()));
+                    if (sortBy != null) {
+                        balanceList = sortBalanceList(balanceList, sortBy);
+                    }
                 }
             }
 
             request.setAttribute("user", user);
             request.setAttribute("selectedPharmacy", selectedPharmacy);
             request.setAttribute("balanceList", balanceList);
+            request.setAttribute("searchTerm", searchTerm);
+            request.setAttribute("currentSort", sortBy);
             request.getRequestDispatcher("/WEB-INF/jsp/dashboard.jsp").forward(request, response);
 
         } catch (Exception e) {
@@ -115,4 +128,44 @@ public class DashboardController extends BaseServlet {
             request.getRequestDispatcher("/WEB-INF/jsp/error.jsp").forward(request, response);
         }
     }
+
+    private List<PharmacyContact> getFilteredSortedContacts(User user, String searchTerm, String sortBy) {
+        List<PharmacyContact> contacts = new ArrayList<>(user.getContacts());
+
+        // Apply search filter
+        if (searchTerm != null && !searchTerm.isEmpty()) {
+            contacts = contacts.stream()
+                    .filter(c -> c.getContactName().toLowerCase().contains(searchTerm.toLowerCase()) ||
+                            c.getPharmacy().getName().toLowerCase().contains(searchTerm.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        // Apply simple sorting
+        if (sortBy != null) {
+            switch (sortBy) {
+                case "name":
+                    contacts.sort(Comparator.comparing(PharmacyContact::getContactName));
+                    break;
+                case "name-desc":
+                    contacts.sort(Comparator.comparing(PharmacyContact::getContactName).reversed());
+                    break;
+                // Trade count sorting will be handled after we get the balance list
+            }
+        }
+
+        return contacts;
+    }
+
+    private List<PharmacyBalanceDTO> sortBalanceList(List<PharmacyBalanceDTO> balanceList, String sortBy) {
+        switch (sortBy) {
+            case "trades":
+                balanceList.sort(Comparator.comparingInt(PharmacyBalanceDTO::getTradeCount).reversed());
+                break;
+            case "trades-desc":
+                balanceList.sort(Comparator.comparingInt(PharmacyBalanceDTO::getTradeCount));
+                break;
+        }
+        return balanceList;
+    }
+
 }

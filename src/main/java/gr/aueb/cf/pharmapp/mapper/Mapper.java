@@ -9,6 +9,7 @@ import gr.aueb.cf.pharmapp.model.User;
 import gr.aueb.cf.pharmapp.security.SecurityUtil;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public class Mapper {
@@ -109,7 +110,8 @@ public class Mapper {
                 contact.getUser() != null ? contact.getUser().getId() : null,
                 contact.getPharmacy() != null ? contact.getPharmacy().getId() : null,
                 contact.getContactName(),
-                contact.getPharmacy() != null ? contact.getPharmacy().getName() : null
+                contact.getPharmacy() != null ?
+                        contact.getPharmacy().getName() : null
         ));
     }
 
@@ -119,6 +121,5 @@ public class Mapper {
         contact.setId(dto.getId());
         return contact;
     }
-
 
 }

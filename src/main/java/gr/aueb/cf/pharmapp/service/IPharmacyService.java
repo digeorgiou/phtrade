@@ -1,5 +1,6 @@
 package gr.aueb.cf.pharmapp.service;
 
+import gr.aueb.cf.pharmapp.dto.BasePharmacyContactDTO;
 import gr.aueb.cf.pharmapp.dto.PharmacyInsertDTO;
 import gr.aueb.cf.pharmapp.dto.PharmacyReadOnlyDTO;
 import gr.aueb.cf.pharmapp.dto.PharmacyUpdateDTO;

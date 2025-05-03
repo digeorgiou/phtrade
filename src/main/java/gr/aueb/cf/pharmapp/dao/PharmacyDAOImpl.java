@@ -2,6 +2,8 @@ package gr.aueb.cf.pharmapp.dao;
 
 import gr.aueb.cf.pharmapp.exceptions.PharmacyDAOException;
 import gr.aueb.cf.pharmapp.model.Pharmacy;
+import gr.aueb.cf.pharmapp.model.PharmacyContact;
+import gr.aueb.cf.pharmapp.model.TradeRecord;
 import gr.aueb.cf.pharmapp.model.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;

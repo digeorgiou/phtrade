@@ -6,6 +6,7 @@ public class BasePharmacyContactDTO {
     private Long pharmacyId;
     private String contactName;  // User-defined name
     private String pharmacyName; // Actual pharmacy name
+    private int tradeCount;
 
     // Constructors, getters, and setters
     public BasePharmacyContactDTO() {}
@@ -58,4 +59,11 @@ public class BasePharmacyContactDTO {
         this.pharmacyName = pharmacyName;
     }
 
+    public int getTradeCount() {
+        return tradeCount;
+    }
+
+    public void setTradeCount(int tradeCount) {
+        this.tradeCount = tradeCount;
+    }
 }

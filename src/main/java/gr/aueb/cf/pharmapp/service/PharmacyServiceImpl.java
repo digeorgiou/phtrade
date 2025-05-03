@@ -5,12 +5,14 @@ import gr.aueb.cf.pharmapp.dao.IPharmacyDAO;
 import gr.aueb.cf.pharmapp.dao.IUserDAO;
 import gr.aueb.cf.pharmapp.dao.PharmacyDAOImpl;
 import gr.aueb.cf.pharmapp.dao.UserDAOImpl;
+import gr.aueb.cf.pharmapp.dto.BasePharmacyContactDTO;
 import gr.aueb.cf.pharmapp.dto.PharmacyInsertDTO;
 import gr.aueb.cf.pharmapp.dto.PharmacyReadOnlyDTO;
 import gr.aueb.cf.pharmapp.dto.PharmacyUpdateDTO;
 import gr.aueb.cf.pharmapp.exceptions.*;
 import gr.aueb.cf.pharmapp.mapper.Mapper;
 import gr.aueb.cf.pharmapp.model.Pharmacy;
+import gr.aueb.cf.pharmapp.model.PharmacyContact;
 import gr.aueb.cf.pharmapp.model.User;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.Hibernate;
@@ -24,10 +26,12 @@ public class PharmacyServiceImpl implements IPharmacyService{
 
     private final IPharmacyDAO pharmacyDAO;
     private final IUserDAO userDAO;
+    private final ITradeRecordService tradeService;
 
     public PharmacyServiceImpl(EntityManagerFactory emf) {
         this.pharmacyDAO = new PharmacyDAOImpl(emf);
         this.userDAO = new UserDAOImpl(emf);
+        this.tradeService = new TradeRecordServiceImpl(emf);
     }
 
 
@@ -237,4 +241,6 @@ public class PharmacyServiceImpl implements IPharmacyService{
     public boolean canAddAsContact(Long userId, Long pharmacyId) throws PharmacyNotFoundException, PharmacyDAOException, UserDAOException {
         return false;
     }
+
+
 }
