@@ -1,6 +1,7 @@
 package gr.aueb.cf.pharmapp.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -8,7 +9,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-
+@AllArgsConstructor
+@Getter
+@Setter
+@Builder
 @Entity
 @Table(name = "pharmacies")
 public class Pharmacy implements Serializable {
@@ -47,74 +51,6 @@ public class Pharmacy implements Serializable {
         this.name = name;
     }
 
-    public Pharmacy(Long id, String name, LocalDateTime createdAt, User user,
-                    Set<TradeRecord> recordsGiver, Set<TradeRecord> recordsReceiver,
-                    Set<PharmacyContact> contactReferences) {
-        this.id = id;
-        this.name = name;
-        this.createdAt = createdAt;
-        this.user = user;
-        this.recordsGiver = recordsGiver;
-        this.recordsReceiver = recordsReceiver;
-        this.contactReferences = contactReferences;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    protected Set<TradeRecord> getRecordsGiver() {
-        return recordsGiver;
-    }
-
-    public Set<TradeRecord> getAllRecordsGiver() {
-        return Collections.unmodifiableSet(recordsGiver);
-    }
-
-    public void setRecordsGiver(Set<TradeRecord> recordsGiver) {
-        this.recordsGiver = recordsGiver;
-    }
-
-    protected Set<TradeRecord> getRecordsReceiver() {
-        return recordsReceiver;
-    }
-
-    public Set<TradeRecord> getAllRecordsReceiver() {
-        return Collections.unmodifiableSet(recordsReceiver);
-    }
-
-    public void setRecordsReceiver(Set<TradeRecord> recordsReceiver) {
-        this.recordsReceiver = recordsReceiver;
-    }
-
     public void addRecordGiver(TradeRecord tradeRecord){
         if (recordsGiver == null) recordsGiver = new HashSet<>();
         recordsGiver.add(tradeRecord);
@@ -122,6 +58,7 @@ public class Pharmacy implements Serializable {
     }
 
     public void removeRecordGiver(TradeRecord tradeRecord){
+        if (recordsGiver == null) return;
         recordsGiver.remove(tradeRecord);
         tradeRecord.setGiver(null);
     }
@@ -133,25 +70,20 @@ public class Pharmacy implements Serializable {
     }
 
     public void removeRecordReceiver(TradeRecord tradeRecord){
+        if (recordsReceiver == null) return;
         recordsReceiver.remove(tradeRecord);
         tradeRecord.setReceiver(null);
     }
 
-    public Set<PharmacyContact> getContactReferences() {
-        return contactReferences;
+    public void addContactReference(PharmacyContact contact){
+        if (contactReferences == null) contactReferences = new HashSet<>();
+        contactReferences.add(contact);
+        contact.setPharmacy(this);
     }
 
-    public void setContactReferences(Set<PharmacyContact> contactReferences) {
-        this.contactReferences = contactReferences;
-    }
-
-    @Override
-    public String toString() {
-        return "Pharmacy{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", createdAt=" + createdAt +
-                ", user=" + user +
-                '}';
+    public void removeContactReference(PharmacyContact contact){
+        if (contactReferences == null) return;
+        contactReferences.remove(contact);
+        contact.setPharmacy(null);
     }
 }

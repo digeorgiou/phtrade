@@ -1,11 +1,18 @@
 package gr.aueb.cf.pharmapp.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-
+@AllArgsConstructor
+@Getter
+@Setter
+@Builder
 @Entity
 @Table(name = "trade_records")
 public class TradeRecord implements Serializable {
@@ -47,105 +54,7 @@ public class TradeRecord implements Serializable {
     @Column(name = "transaction_date")
     private LocalDateTime transactionDate;
 
-    public TradeRecord() {
-    }
 
-    public TradeRecord(Long id, String description, Double amount, Pharmacy giver, Pharmacy receiver,
-                       User recorder, boolean deletedByGiver,
-                       boolean deletedByReceiver, User lastModifiedBy,
-                       LocalDateTime transactionDate) {
-        this.id = id;
-        this.description = description;
-        this.amount = amount;
-        this.giver = giver;
-        this.receiver = receiver;
-        this.recorder = recorder;
-        this.deletedByGiver = deletedByGiver;
-        this.deletedByReceiver = deletedByReceiver;
-        this.lastModifiedBy = lastModifiedBy;
-        this.transactionDate = transactionDate;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(Double amount) {
-        this.amount = amount;
-    }
-
-    public Pharmacy getGiver() {
-        return giver;
-    }
-
-    public void setGiver(Pharmacy giver) {
-        this.giver = giver;
-    }
-
-    public Pharmacy getReceiver() {
-        return receiver;
-    }
-
-    public void setReceiver(Pharmacy receiver) {
-        this.receiver = receiver;
-    }
-
-    public User getRecorder() {
-        return recorder;
-    }
-
-    public void setRecorder(User recorder) {
-        this.recorder = recorder;
-    }
-
-    public LocalDateTime getTransactionDate() {
-        return transactionDate;
-    }
-
-    public void setTransactionDate(LocalDateTime transactionDate) {
-        this.transactionDate = transactionDate;
-    }
-
-
-    public boolean isDeletedByGiver() {
-        return deletedByGiver;
-    }
-
-    public void setDeletedByGiver(boolean deletedByGiver) {
-        this.deletedByGiver = deletedByGiver;
-    }
-
-    public boolean isDeletedByReceiver() {
-        return deletedByReceiver;
-    }
-
-    public void setDeletedByReceiver(boolean deletedByReceiver) {
-        this.deletedByReceiver = deletedByReceiver;
-    }
-
-    public User getLastModifiedBy() {
-        return lastModifiedBy;
-    }
-
-    public void setLastModifiedBy(User lastModifiedBy) {
-        this.lastModifiedBy = lastModifiedBy;
-    }
 
     @Override
     public String toString() {
