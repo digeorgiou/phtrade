@@ -3,11 +3,19 @@ package gr.aueb.cf.pharmapp.model;
 
 import gr.aueb.cf.pharmapp.core.RoleType;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+@AllArgsConstructor
+@Getter
+@Setter
+@Builder
 @Entity
 @Table(name = "users")
 public class User implements Serializable {
@@ -39,86 +47,6 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "user")
     private Set<PharmacyContact> contacts = new HashSet<>();
 
-
-    public User() {
-    }
-
-    public User(Long id, String username, String password, String email, RoleType roleType,
-                Set<Pharmacy> pharmacies, Set<TradeRecord> recordsRecorder, Set<PharmacyContact> contacts) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.roleType = roleType;
-        this.pharmacies = pharmacies;
-        this.recordsRecorder = recordsRecorder;
-        this.contacts = contacts;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public RoleType getRoleType() {
-        return roleType;
-    }
-
-    public void setRoleType(RoleType roleType) {
-        this.roleType = roleType;
-    }
-
-    public Set<Pharmacy> getPharmacies() {
-        return pharmacies;
-    }
-
-    public void setPharmacies(Set<Pharmacy> pharmacies) {
-        this.pharmacies = pharmacies;
-    }
-
-    public Set<TradeRecord> getRecordsRecorder() {
-        return recordsRecorder;
-    }
-
-    public void setRecordsRecorder(Set<TradeRecord> recordsRecorder) {
-        this.recordsRecorder = recordsRecorder;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Set<PharmacyContact> getContacts() {
-        return contacts;
-    }
-
-    public void setContacts(Set<PharmacyContact> contacts) {
-        this.contacts = contacts;
-    }
-
     public void addRecordRecorder(TradeRecord tradeRecord){
         if (recordsRecorder == null) recordsRecorder = new HashSet<>();
         recordsRecorder.add(tradeRecord);
@@ -126,17 +54,32 @@ public class User implements Serializable {
     }
 
     public void removeRecordRecorder(TradeRecord tradeRecord){
+        if (recordsRecorder == null) return;
         recordsRecorder.remove(tradeRecord);
         tradeRecord.setRecorder(null);
     }
 
     public void addPharmacy(Pharmacy pharmacy) {
+        if(pharmacies == null) pharmacies = new HashSet<>();
         pharmacies.add(pharmacy);
         pharmacy.setUser(this);
     }
 
     public void removePharmacy(Pharmacy pharmacy) {
+        if(pharmacies == null) return;
         pharmacies.remove(pharmacy);
         pharmacy.setUser(null);
+    }
+
+    public void addContact(PharmacyContact contact){
+        if (contacts == null) contacts = new HashSet<>();
+        contacts.add(contact);
+        contact.setUser(this);
+    }
+
+    public void removeContact(PharmacyContact contact){
+        if (contacts == null) return;
+        contacts.remove(contact);
+        contact.setUser(null);
     }
 }

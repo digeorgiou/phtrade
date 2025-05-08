@@ -42,15 +42,6 @@ public class Pharmacy implements Serializable {
     private Set<PharmacyContact> contactReferences = new HashSet<>();
 
 
-    public Pharmacy() {
-        this.createdAt = LocalDateTime.now();
-    }
-
-    public Pharmacy(String name){
-        this();
-        this.name = name;
-    }
-
     public void addRecordGiver(TradeRecord tradeRecord){
         if (recordsGiver == null) recordsGiver = new HashSet<>();
         recordsGiver.add(tradeRecord);

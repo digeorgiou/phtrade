@@ -34,6 +34,8 @@ public class UserDAOImpl implements IUserDAO{
             tx = em.getTransaction();
             tx.begin();
             em.persist(user);
+
+
             tx.commit();
             return user;
         } catch (Exception e) {
@@ -94,6 +96,20 @@ public class UserDAOImpl implements IUserDAO{
             tx.begin();
             User user = em.find(User.class, userIdToDelete);
             if (user != null) {
+
+                // Maintain pharmacy relationships
+                for (Pharmacy pharmacy : user.getPharmacies()) {
+                    pharmacy.setUser(null); // Orphan removal if configured
+                }
+
+                // Maintain contact relationships
+                for (PharmacyContact contact : user.getContacts()) {
+                    Pharmacy pharmacy = em.find(Pharmacy.class, contact.getPharmacy().getId());
+                    if (pharmacy != null) {
+                        pharmacy.removeContactReference(contact); // Use helper method
+                    }
+                }
+
                 em.remove(user);
             }
             tx.commit();

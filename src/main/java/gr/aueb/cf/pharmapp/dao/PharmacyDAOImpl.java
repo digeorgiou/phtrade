@@ -34,9 +34,7 @@ public class PharmacyDAOImpl implements  IPharmacyDAO{
                 // Get the managed user entity
                 User user = em.find(User.class, pharmacy.getUser().getId());
                 if (user != null) {
-                    // Add the pharmacy to the user's collection
-                    user.getPharmacies().add(pharmacy);
-                    em.merge(user); // Ensure the user is updated
+                    user.addPharmacy(pharmacy);
                 }
             }
 
@@ -87,6 +85,20 @@ public class PharmacyDAOImpl implements  IPharmacyDAO{
             tx.begin();
             Pharmacy pharmacy = em.find(Pharmacy.class, id);
             if(pharmacy != null){
+                if (pharmacy.getUser() != null) {
+                    User user = em.find(User.class, pharmacy.getUser().getId());
+                    if (user != null) {
+                        user.removePharmacy(pharmacy); // Use helper method
+                    }
+                }
+
+                // Clear contact references
+                for (PharmacyContact contact : pharmacy.getContactReferences()) {
+                    User user = em.find(User.class, contact.getUser().getId());
+                    if (user != null) {
+                        user.removeContact(contact); // Use helper method
+                    }
+                }
                 em.remove(pharmacy);
             }
             tx.commit();
